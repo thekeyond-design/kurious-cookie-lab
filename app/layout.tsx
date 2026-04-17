@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { Story_Script, Oswald, Arimo, Nunito, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const adws = localFont({
+  src: "../public/fonts/ADayWithoutSun.ttf",
+  variable: "--font-adws",
+  display: "swap",
+});
 
 const storyScript = Story_Script({
   variable: "--story-script",
@@ -42,7 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${storyScript.variable} ${oswald.variable} ${arimo.variable} ${nunito.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${adws.variable} ${storyScript.variable} ${oswald.variable} ${arimo.variable} ${nunito.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FAF6F0] text-black">
         {children}

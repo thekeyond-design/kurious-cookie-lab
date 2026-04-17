@@ -19,7 +19,6 @@ const FULFILLMENT_OPTIONS: { value: FulfillmentType; label: string; sub: string;
   { value: "pickup",            label: "Pickup",            sub: "Guilford County, NC",  fee: "Free" },
   { value: "local_delivery",    label: "Local Delivery",    sub: "Guilford County area", fee: "TBD" },
   { value: "nc_shipping",       label: "NC Shipping",       sub: "North Carolina",       fee: "TBD" },
-  { value: "national_shipping", label: "National Shipping", sub: "All 50 states",        fee: "TBD" },
 ]
 
 function isValidEmail(email: string) {

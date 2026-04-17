@@ -68,7 +68,7 @@ const FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         q: "Where do you deliver?",
-        a: "We deliver statewide within North Carolina. Nationwide shipping is available for an additional cost. Local delivery and pickup are available in Guilford County, NC.",
+        a: "We offer local pickup and delivery within Guilford County, NC, as well as shipping throughout North Carolina. Contact us for availability in your area.",
       },
       {
         q: "How are cookies packaged?",

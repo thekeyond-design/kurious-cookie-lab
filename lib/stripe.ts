@@ -16,5 +16,4 @@ export const SHIPPING_FEES: Record<string, number> = {
   pickup:            0,
   local_delivery:    500,   // $5.00 — placeholder
   nc_shipping:       800,   // $8.00 — placeholder
-  national_shipping: 1200,  // $12.00 — placeholder
 }

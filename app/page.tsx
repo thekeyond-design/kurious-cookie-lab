@@ -34,46 +34,6 @@ const GALLERY_ITEMS: CookieGalleryItem[] = [
     image: "/images/cookies/CCT3.jpeg",
     color: "#FF3DA0",
   },
-  {
-    id: "PbO",
-    title: "Peanut Butter Oreo",
-    description: "Two legends, one formula. Smooth peanut butter dough loaded with crushed Oreo. Dangerously addictive.",
-    href: "/menu#peanut-butter-oreo",
-    image: "/images/cookies/PbO1.jpg",
-    color: "#4DAEEA",
-  },
-  {
-    id: "BP",
-    title: "Banana Pudding",
-    description: "Southern comfort in cookie form. Vanilla wafer crumbles, banana essence, and a soft chewy bite.",
-    href: "/menu#banana-pudding",
-    image: "/images/cookies/bp3.jpg",
-    color: "#FF9F43",
-  },
-  {
-    id: "Su",
-    title: "Sugar Cookie",
-    description: "The purist's pick. Buttery, barely crisp edges with a pillowy center dusted in sugar crystals.",
-    href: "/menu#sugar-cookie",
-    image: "/images/cookies/sc2.jpg",
-    color: "#3EC9C9",
-  },
-  {
-    id: "Dc",
-    title: "Double Chocolate",
-    description: "Twice the reaction. Dark chocolate dough packed with semi-sweet chunks. A true compound formula.",
-    href: "/menu#double-chocolate",
-    image: "/images/cookies/dcc1.jpg",
-    color: "#FFD166",
-  },
-  {
-    id: "Sn",
-    title: "Snowball",
-    description: "Our limited rare element. Melt-in-your-mouth pecan shortbread rolled in powdered sugar.",
-    href: "/menu#snowball",
-    image: "/images/cookies/sb2.jpg",
-    color: "#c026a0",
-  },
 ]
 
 export default function Home() {
@@ -152,13 +112,13 @@ function HeroSection({ heroImage }: { heroImage: string | null }) {
           </div>
 
           <h1 className="text-6xl sm:text-7xl md:text-8xl leading-none font-extrabold text-black">
-            <span style={{ fontFamily: "var(--font-display)" }}>Science Baked</span>
+            <span style={{ fontFamily: "var(--font-display)" }}>Where Your Curiosity</span>
             <br />
             <span
               className="text-[#FF3DA0]"
               style={{ fontFamily: "var(--font-script)", fontWeight: 400, fontSize: "0.95em" }}
             >
-              Into Every Bite.
+              Takes a Bite.
             </span>
           </h1>
 
@@ -320,8 +280,6 @@ function OurStorySection() {
             style={{ fontFamily: "var(--font-oswald)" }}
           >
             <span>Guilford County, NC</span>
-            <span className="text-[#FF3DA0]/30">·</span>
-            <span>Ships Nationwide</span>
             <span className="text-[#FF3DA0]/30">·</span>
             <span>Made to Order</span>
           </div>
