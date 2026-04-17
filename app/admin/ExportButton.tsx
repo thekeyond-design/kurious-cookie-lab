@@ -5,7 +5,7 @@ interface Order {
   customer_name: string
   customer_email: string
   box_size: number
-  cookie_ids: string[]
+  cookie_ids?: string[] | null
   fulfillment: string
   total: number
   status: string
