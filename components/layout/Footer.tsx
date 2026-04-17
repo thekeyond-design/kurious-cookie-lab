@@ -37,7 +37,7 @@ export function Footer() {
             <span className="text-white/35 font-semibold"> Lab</span>
           </span>
           <p className="text-sm text-white/50 leading-relaxed max-w-[200px]" style={{ fontFamily: FONT }}>
-            Science baked into every bite.
+            Science in every bite.
             Guilford County, NC.
           </p>
           <div className="flex gap-3 pt-1">
@@ -81,7 +81,7 @@ export function Footer() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/30"
           style={{ fontFamily: FONT }}>
           <span>© {new Date().getFullYear()} Kurious Cookie Lab. All rights reserved.</span>
-          <span>Baked fresh in Guilford County, NC</span>
+          <span>Made in Guilford County, NC</span>
         </div>
       </div>
     </footer>

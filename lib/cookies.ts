@@ -79,6 +79,43 @@ export const COOKIES: Cookie[] = [
     isUnstable: false,
     imageUrl: "/images/cookies/sb1.jpg",
   },
+  // ── Seasonal — Coming Soon ────────────────────────────────────────────────
+  {
+    id: "ocs",
+    slug: "orange-cranberry-sugar",
+    name: "Orange Cranberry Sugar",
+    symbol: "OcS",
+    atomicNumber: 7,
+    group: "seasonal",
+    description: "A festive twist on the classic — bright citrus zest and tart cranberry folded into a soft, buttery sugar cookie base.",
+    price: 4.75,
+    isActive: false,
+    isUnstable: true,
+  },
+  {
+    id: "mcl",
+    slug: "mint-choc-oatmeal-lace",
+    name: "Mint Choc Oatmeal Lace",
+    symbol: "Mc",
+    atomicNumber: 8,
+    group: "seasonal",
+    description: "A delicate oatmeal lace cookie infused with cool mint and rich chocolate. Crispy edges, complex formula.",
+    price: 4.75,
+    isActive: false,
+    isUnstable: true,
+  },
+  {
+    id: "sma",
+    slug: "strawberry-matcha",
+    name: "Strawberry Matcha",
+    symbol: "SM",
+    atomicNumber: 9,
+    group: "seasonal",
+    description: "Earthy ceremonial matcha meets sweet strawberry in a soft, chewy cookie with a beautiful natural color.",
+    price: 4.75,
+    isActive: false,
+    isUnstable: true,
+  },
 ]
 
 // Color map by group — periodic table tile colors

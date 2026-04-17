@@ -107,7 +107,7 @@ function HeroSection({ heroImage }: { heroImage: string | null }) {
               backdropFilter: heroImage ? "blur(4px)" : "none",
             }}
           >
-            Baked Fresh to Order &nbsp;&middot;&nbsp; Guilford County, NC
+            Batch to Order &nbsp;&middot;&nbsp; Guilford County, NC
           </div>
 
           <h1 className="text-6xl sm:text-7xl md:text-8xl leading-none font-extrabold text-black">

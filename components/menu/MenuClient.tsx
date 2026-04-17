@@ -18,12 +18,6 @@ const GROUP_META: Record<string, { label: string; color: string; description: st
   limited:  { label: "Limited",  color: "#3EC9C9", description: "Rare compounds — extremely limited batches." },
 }
 
-const PLACEHOLDER_TILES = [
-  { num: 7, label: "New Element" },
-  { num: 8, label: "New Element" },
-  { num: 9, label: "Unstable" },
-  { num: 10, label: "Unstable" },
-]
 
 // ─── Main export ───────────────────────────────────────────────────────────────
 export function MenuClient() {
@@ -34,6 +28,7 @@ export function MenuClient() {
   const filtered = filter === "all" ? COOKIES : COOKIES.filter((c) => c.group === filter)
 
   function openCookie(cookie: Cookie) {
+    if (cookie.isActive === false) return
     setSelected(cookie)
     setModalOpen(true)
   }
@@ -71,7 +66,6 @@ export function MenuClient() {
               cookies={filtered}
               selected={selected}
               onSelect={openCookie}
-              filter={filter}
             />
             <UnstableTeaser />
           </div>
@@ -310,13 +304,11 @@ function FilterTabs({ filter, onFilter }: { filter: "all" | CookieGroup; onFilte
 }
 
 // ─── Element Grid ──────────────────────────────────────────────────────────────
-function ElementGrid({ cookies, selected, onSelect, filter }: {
+function ElementGrid({ cookies, selected, onSelect }: {
   cookies: Cookie[]
   selected: Cookie | null
   onSelect: (c: Cookie) => void
-  filter: "all" | CookieGroup
 }) {
-  const showPlaceholders = filter === "all" || filter === "seasonal"
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-4">
@@ -339,8 +331,6 @@ function ElementGrid({ cookies, selected, onSelect, filter }: {
             onClick={() => onSelect(cookie)}
           />
         ))}
-        {showPlaceholders &&
-          PLACEHOLDER_TILES.map((p) => <PlaceholderTile key={p.num} num={p.num} label={p.label} />)}
       </div>
     </div>
   )
@@ -350,20 +340,26 @@ function ElementGrid({ cookies, selected, onSelect, filter }: {
 function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelected: boolean; onClick: () => void }) {
   const colors = GROUP_COLORS[cookie.group]
   const meta = GROUP_META[cookie.group]
+  const inactive = cookie.isActive === false
 
   return (
     <button
-      onClick={onClick}
+      onClick={inactive ? undefined : onClick}
+      disabled={inactive}
       className={[
         "relative aspect-square flex flex-col items-center justify-center gap-0.5",
-        "rounded-xl border-2 p-2 cursor-pointer select-none",
+        "rounded-xl border-2 p-2 select-none",
         "transition-all duration-200 group",
         colors.bg, colors.text,
-        isSelected ? "scale-105 shadow-xl" : "hover:-translate-y-1 hover:shadow-md",
+        inactive
+          ? "opacity-50 cursor-default"
+          : isSelected
+            ? "scale-105 shadow-xl cursor-pointer"
+            : "hover:-translate-y-1 hover:shadow-md cursor-pointer",
         cookie.isUnstable ? "element-tile unstable" : "",
       ].join(" ")}
       style={{
-        borderColor: isSelected ? meta.color : `${meta.color}70`,
+        borderColor: inactive ? `${meta.color}40` : isSelected ? meta.color : `${meta.color}70`,
         boxShadow: isSelected
           ? `0 0 0 3px ${meta.color}40, 0 8px 24px ${meta.color}30`
           : `0 2px 8px ${meta.color}15`,
@@ -390,9 +386,15 @@ function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelect
         style={{ fontFamily: "var(--font-sans)" }}>
         {cookie.name}
       </span>
+      {inactive ? (
+        <span className="text-[8px] font-bold mt-0.5 uppercase tracking-wide" style={{ fontFamily: "var(--font-oswald)", color: meta.color }}>
+          Coming Soon
+        </span>
+      ) : (
       <span className="text-[9px] font-bold mt-0.5" style={{ fontFamily: "var(--font-oswald)", color: meta.color }}>
         ${cookie.price.toFixed(2)}
       </span>
+      )}
       {isSelected && (
         <span
           className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
@@ -403,18 +405,6 @@ function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelect
   )
 }
 
-// ─── Placeholder Tile ──────────────────────────────────────────────────────────
-function PlaceholderTile({ num, label }: { num: number; label: string }) {
-  return (
-    <div className="relative aspect-square flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-black/10 p-2 opacity-40 cursor-not-allowed">
-      <span className="absolute top-1.5 left-2 text-[9px] font-mono opacity-40 leading-none">{num}</span>
-      <span className="text-2xl font-extrabold text-black/20 leading-none mt-3" style={{ fontFamily: "var(--font-display)" }}>?</span>
-      <span className="text-[8px] font-medium text-center text-black/30 leading-tight" style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-        {label}
-      </span>
-    </div>
-  )
-}
 
 // ─── Unstable Teaser ───────────────────────────────────────────────────────────
 function UnstableTeaser() {

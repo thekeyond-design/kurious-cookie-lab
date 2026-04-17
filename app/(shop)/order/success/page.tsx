@@ -175,8 +175,8 @@ export default async function SuccessPage({
               What happens next
             </h3>
             {[
-              { step: "01", text: "We review and confirm your order within 24 hours." },
-              { step: "02", text: "Your batch gets baked fresh — no pre-baked cookies here." },
+              { step: "01", text: "We review and confirm your order." },
+              { step: "02", text: "Your batch is made fresh to order — never pre-made." },
               { step: "03", text: "We contact you for pickup scheduling or shipping details." },
             ].map((s) => (
               <div key={s.step} className="flex items-start gap-3">

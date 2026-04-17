@@ -53,7 +53,7 @@ function AtomDecoration() {
 
 const CookieGallery = ({
   title = "Our Highlighted Elements",
-  description = "A selection of our most-loved cookie formulas. Built to order, baked fresh to your door.",
+  description = "A selection of our most-loved cookie formulas. Batched to order, made fresh for you.",
   items,
 }: CookieGalleryProps) => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();

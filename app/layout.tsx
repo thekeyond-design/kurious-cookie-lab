@@ -4,7 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 const adws = localFont({
-  src: "../public/fonts/ADayWithoutSun.ttf",
+  src: "../public/fonts/ADayWithoutSun.otf",
   variable: "--font-adws",
   display: "swap",
 });
@@ -40,7 +40,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Kurious Cookie Lab",
-  description: "Science baked into every bite. Artisan cookies built like chemistry — pick your elements, build your formula.",
+  description: "Science in every bite. Artisan cookies built like chemistry — pick your elements, build your formula.",
 };
 
 export default function RootLayout({

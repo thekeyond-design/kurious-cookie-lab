@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { FadeIn } from "@/components/ui/fade-in"
 
-type FAQItem = { q: string; a: string }
+type FAQItem = { q: string; a: string; badge?: string }
 export type FAQSection = {
   id: string
   label: string
@@ -128,11 +128,21 @@ function AccordionItem({ item, color }: { item: FAQItem; color: string }) {
         className="flex items-center justify-between gap-4 px-6 py-4 cursor-pointer select-none list-none
                    hover:bg-black/[0.02] transition-colors"
       >
-        <span
-          className="font-extrabold text-sm text-black leading-snug"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {item.q}
+        <span className="flex items-center gap-2 flex-wrap">
+          <span
+            className="font-extrabold text-sm text-black leading-snug"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            {item.q}
+          </span>
+          {item.badge && (
+            <span
+              className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{ fontFamily: "var(--font-oswald)", background: "#FF9F4320", color: "#FF9F43" }}
+            >
+              {item.badge}
+            </span>
+          )}
         </span>
         <span
           className="shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-bold

@@ -20,7 +20,7 @@ const FAQ_SECTIONS: FAQSection[] = [
     items: [
       {
         q: "What is the minimum order?",
-        a: "Our minimum order is a 6-pack of cookies. You can mix and match flavors or choose a single variety. Individual cookies are available for sampling — one flavor per order. For larger orders or events, we offer 12-packs and custom catering options.",
+        a: "Individual packs are one flavor, minimum 4 cookies. Boxes start at 6 cookies — mix and match from our menu. For larger orders or events, we offer 12-packs and custom catering options.",
       },
       {
         q: "Can I customize my box?",
@@ -29,10 +29,6 @@ const FAQ_SECTIONS: FAQSection[] = [
       {
         q: "How many flavors can I choose per box?",
         a: "For a 6-pack, you can choose up to 2 different flavors. For a 12-pack, up to 3 different flavors. This helps us ensure the freshest possible cookies in every box!",
-      },
-      {
-        q: "How fresh are the cookies?",
-        a: "All cookies are baked fresh within 24–48 hours of your order. They go from our lab (kitchen) straight to your door at peak deliciousness.",
       },
     ],
   },
@@ -89,6 +85,7 @@ const FAQ_SECTIONS: FAQSection[] = [
       {
         q: "Do you offer cookie workshops?",
         a: "Yes! Our interactive workshops include hands-on cookie creation and science demonstrations. Perfect for birthday parties, team building, or school events. Virtual workshop options are available too!",
+        badge: "Coming Soon",
       },
     ],
   },

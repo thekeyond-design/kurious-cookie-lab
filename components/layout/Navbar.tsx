@@ -123,7 +123,7 @@ export function Navbar() {
               </div>
               <div className="border-t border-black/5 px-4 py-2.5">
                 <p className="text-[10px] text-black/30 uppercase tracking-widest" style={{ fontFamily: "var(--font-oswald)" }}>
-                  Baked Fresh · Made to Order
+                  Batch to Order · Guilford County, NC
                 </p>
               </div>
             </div>
