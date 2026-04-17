@@ -26,6 +26,7 @@ export default async function AdminPage({
 }: {
   searchParams: Promise<{ status?: string }>
 }) {
+  try {
   const { status } = await searchParams
   const supabase = createServiceClient()
 
@@ -48,10 +49,6 @@ export default async function AdminPage({
     acc[o.status] = (acc[o.status] ?? 0) + 1
     return acc
   }, {})
-
-  const totalRevenue = (counts ?? []).length
-    ? await supabase.from("orders").select("total").neq("status", "cancelled")
-    : null
 
   return (
     <div className="min-h-screen" style={{ background: "#FAF6F0" }}>
@@ -204,4 +201,16 @@ export default async function AdminPage({
       </div>
     </div>
   )
+  } catch (err) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAF6F0" }}>
+        <div className="rounded-2xl bg-red-50 border border-red-200 p-8 max-w-lg text-center space-y-3">
+          <p className="font-bold text-red-600">Admin Error</p>
+          <p className="text-sm text-red-500 font-mono break-all">
+            {err instanceof Error ? err.message : String(err)}
+          </p>
+        </div>
+      </div>
+    )
+  }
 }
