@@ -4,7 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 
 const adws = localFont({
-  src: "../public/fonts/ADayWithoutSun.otf",
+  src: "../public/fonts/ADayWithoutSun.ttf",
   variable: "--font-adws",
   display: "swap",
 });
