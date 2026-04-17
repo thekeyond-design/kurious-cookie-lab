@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { OrderBuilder } from "@/components/order/OrderBuilder"
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 }
 
 export default function OrderPage() {
-  return <OrderBuilder />
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: "#FAF6F0" }} />}>
+      <OrderBuilder />
+    </Suspense>
+  )
 }
