@@ -22,7 +22,7 @@ export type BoxSize = 0 | 6 | 12 | 20 | 26 | 32
 // 0 = individual (no box), otherwise box of N
 
 export const BOX_CONFIG: Record<number, { label: string; maxFlavors: number; flatPrice: number | null; featured: boolean }> = {
-  0:  { label: "Individual",      maxFlavors: 2, flatPrice: null, featured: true },
+  0:  { label: "Individual",      maxFlavors: 1, flatPrice: null, featured: true },
   6:  { label: "Starter Formula", maxFlavors: 2, flatPrice: 24,   featured: true },
   12: { label: "Lab Formula",     maxFlavors: 3, flatPrice: 48,   featured: true },
   20: { label: "Advanced Compound", maxFlavors: 4, flatPrice: null, featured: false },

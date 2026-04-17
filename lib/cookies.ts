@@ -12,6 +12,7 @@ export const COOKIES: Cookie[] = [
     price: 4.50,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/CCT2jpeg.jpeg",
   },
   {
     id: "pbo",
@@ -24,6 +25,7 @@ export const COOKIES: Cookie[] = [
     price: 5.00,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/pbomenu.jpg",
   },
   {
     id: "bp",
@@ -36,6 +38,7 @@ export const COOKIES: Cookie[] = [
     price: 4.75,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/bpmenu.jpg",
   },
   {
     id: "su",
@@ -48,6 +51,7 @@ export const COOKIES: Cookie[] = [
     price: 3.75,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/scmenu.jpg",
   },
   {
     id: "dc",
@@ -60,6 +64,7 @@ export const COOKIES: Cookie[] = [
     price: 4.75,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/dcc2.jpg",
   },
   {
     id: "sn",
@@ -72,6 +77,7 @@ export const COOKIES: Cookie[] = [
     price: 4.00,
     isActive: true,
     isUnstable: false,
+    imageUrl: "/images/cookies/sb1.jpg",
   },
 ]
 

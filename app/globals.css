@@ -5,6 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Glow component brand tokens (HSL values, no wrapper) */
+  --brand: 328 100% 62%;
+  --brand-foreground: 328 100% 75%;
+
   /* Brand Colors */
   --pink-hot: #FF3DA0;
   --pink-light: #FF66C4;
@@ -64,9 +68,11 @@
   --color-orange: var(--orange);
   --color-gold: var(--gold);
 
-  --font-sans: var(--font-sans);
+  --font-sans: var(--arimo);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-display: var(--nunito);
+  --font-script: var(--story-script);
+  --font-oswald: var(--oswald);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
