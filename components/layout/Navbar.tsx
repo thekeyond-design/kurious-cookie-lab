@@ -3,7 +3,10 @@
 import Link from "next/link"
 import { useState, useEffect, useRef } from "react"
 import { usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { ShoppingBag, User, ChevronDown } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import type { User as SupabaseUser } from "@supabase/supabase-js"
 
 const ELEMENTS_DROPDOWN = [
   {
@@ -174,14 +177,8 @@ export function Navbar() {
 
         {/* ── Right actions ─────────────────────────────────────────────── */}
         <div className="flex items-center gap-2 flex-1 justify-end">
-          {/* Sign In */}
-          <Link
-            href="/account"
-            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-black/60 hover:text-black transition-colors"
-          >
-            <User className="w-4 h-4" />
-            Sign In
-          </Link>
+          {/* Auth state */}
+          <NavUser />
 
           {/* Cart */}
           <Link
@@ -275,5 +272,101 @@ export function Navbar() {
         </div>
       </div>
     </header>
+  )
+}
+
+// ── Auth-aware user button ────────────────────────────────────────────────────
+function NavUser() {
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const router = useRouter()
+  const supabase = createClient()
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
+  async function signOut() {
+    await supabase.auth.signOut()
+    setUser(null)
+    router.push("/account")
+    router.refresh()
+  }
+
+  if (!user) {
+    return (
+      <Link
+        href="/account"
+        className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-black/60 hover:text-black transition-colors"
+      >
+        <User className="w-4 h-4" />
+        Sign In
+      </Link>
+    )
+  }
+
+  const initials = (user.user_metadata?.full_name ?? user.email ?? "U")
+    .split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase()
+
+  return (
+    <div ref={menuRef} className="relative hidden md:block">
+      <button
+        onClick={() => setMenuOpen(!menuOpen)}
+        className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-black/5 transition-colors"
+      >
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-extrabold text-white"
+          style={{ background: "#FF3DA0", fontFamily: "var(--font-display)" }}
+        >
+          {initials}
+        </div>
+        <ChevronDown className="w-3 h-3 text-black/40" style={{ transform: menuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+      </button>
+
+      <div
+        className="absolute top-full right-0 mt-2 w-48 rounded-2xl border border-black/8 bg-white shadow-xl overflow-hidden"
+        style={{
+          opacity: menuOpen ? 1 : 0,
+          transform: menuOpen ? "scale(1) translateY(0)" : "scale(0.96) translateY(-6px)",
+          pointerEvents: menuOpen ? "auto" : "none",
+          transition: "all 0.15s ease",
+        }}
+      >
+        <div className="px-4 py-3 border-b border-black/5">
+          <p className="text-xs font-bold text-black truncate" style={{ fontFamily: "var(--font-display)" }}>
+            {user.user_metadata?.full_name ?? "My Account"}
+          </p>
+          <p className="text-[10px] text-black/35 truncate">{user.email}</p>
+        </div>
+        <div className="p-1.5 space-y-0.5">
+          <Link
+            href="/account/orders"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-black/70 hover:bg-black/[0.03] transition-colors"
+          >
+            My Orders
+          </Link>
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm text-black/50 hover:bg-black/[0.03] transition-colors text-left"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
