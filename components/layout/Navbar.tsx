@@ -164,7 +164,7 @@ export function Navbar() {
           <Link href="/" className="block">
             <span
               className="text-xl leading-none whitespace-nowrap"
-              style={{ fontFamily: "var(--font-adws, var(--font-display))", letterSpacing: "0.04em" }}
+              style={{ fontFamily: "var(--font-display)", letterSpacing: "0.04em" }}
             >
               Kurious<span className="text-[#FF3DA0]">Cookie</span>
               <span className="text-black/35 font-semibold"> Lab</span>

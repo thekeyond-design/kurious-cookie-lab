@@ -20,7 +20,7 @@ const LINKS = {
   ],
 }
 
-const FONT = "var(--font-adws, var(--font-display))"
+const FONT = "var(--font-display)"
 
 export function Footer() {
   return (
