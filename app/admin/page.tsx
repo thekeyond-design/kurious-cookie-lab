@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { createServiceClient } from "@/lib/supabase/server"
 import type { OrderStatus } from "@/types/database"
+import { ExportButton } from "./ExportButton"
 
 export const metadata = { title: "Admin | Kurious Cookie Lab" }
 
@@ -67,7 +68,10 @@ export default async function AdminPage({
               KCL Admin
             </span>
           </div>
-          <span className="text-xs text-black/40 font-mono">Orders Dashboard</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-black/40 font-mono">Orders Dashboard</span>
+            <ExportButton orders={orders ?? []} />
+          </div>
         </div>
       </div>
 
