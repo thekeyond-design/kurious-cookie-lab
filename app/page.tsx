@@ -59,7 +59,7 @@ function HeroSection({ heroImage }: { heroImage: string | null }) {
         {heroImage ? (
           <Image
             src={heroImage}
-            alt="Kurious Cookie Lab — fresh-baked cookies"
+            alt="Kurious Cookie Lab — artisan cookies"
             fill
             className="object-cover object-center"
             priority
@@ -241,8 +241,8 @@ function OurStorySection() {
         <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
           {[
             { value: "6+",    label: "Core Elements",   color: "#4DAEEA" },
-            { value: "48hr",  label: "Fresh to Order",  color: "#FF3DA0" },
-            { value: "100%",  label: "Made to Order",   color: "#3EC9C9" },
+            { value: "100%",  label: "Batch to Order",  color: "#FF3DA0" },
+            { value: "NC",    label: "Guilford County", color: "#3EC9C9" },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -280,7 +280,7 @@ function OurStorySection() {
           >
             <span>Guilford County, NC</span>
             <span className="text-[#FF3DA0]/30">·</span>
-            <span>Made to Order</span>
+            <span>Batch to Order</span>
           </div>
         </div>
       </FadeIn>

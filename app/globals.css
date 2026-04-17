@@ -2,9 +2,20 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* A Day Without Sun — OTF binary served as .ttf; must declare opentype format */
+@font-face {
+  font-family: "ADayWithoutSun";
+  src: url("/fonts/ADayWithoutSun.ttf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  --font-adws: "ADayWithoutSun", sans-serif;
+
   /* Glow component brand tokens (HSL values, no wrapper) */
   --brand: 328 100% 62%;
   --brand-foreground: 328 100% 75%;
