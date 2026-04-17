@@ -30,8 +30,8 @@ export function Footer() {
         {/* Brand col */}
         <div className="space-y-4">
           <span
-            className="text-xl font-extrabold leading-none block"
-            style={{ fontFamily: FONT }}
+            className="text-xl leading-none block"
+            style={{ fontFamily: FONT, letterSpacing: "0.04em" }}
           >
             Kurious<span className="text-[#FF3DA0]">Cookie</span>
             <span className="text-white/35 font-semibold"> Lab</span>

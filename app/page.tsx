@@ -30,7 +30,7 @@ const GALLERY_ITEMS: CookieGalleryItem[] = [
     id: "Cc",
     title: "Chocolate Chip Toffee",
     description: "The classic, elevated. Buttery toffee bits folded into a rich chocolate chip base. Our most-ordered element.",
-    href: "/menu#chocolate-chip-toffee",
+    href: "/order?start=chocolate-chip-toffee",
     image: "/images/cookies/CCT3.jpeg",
     color: "#FF3DA0",
   },
@@ -45,7 +45,6 @@ export default function Home() {
         <HeroSection heroImage={heroImage} />
         <CookieGallery items={GALLERY_ITEMS} />
         <OurStorySection />
-        <BuildYourFormulaSection />
       </main>
       <Footer />
     </>

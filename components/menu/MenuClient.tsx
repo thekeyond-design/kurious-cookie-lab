@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { X } from "lucide-react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
-import { GlowCard } from "@/components/ui/glow-card"
 import { AllergenNotice } from "@/components/ui/allergen-notice"
 import { COOKIES, GROUP_COLORS } from "@/lib/cookies"
 import type { Cookie, CookieGroup } from "@/types"
@@ -18,7 +18,6 @@ const GROUP_META: Record<string, { label: string; color: string; description: st
   limited:  { label: "Limited",  color: "#3EC9C9", description: "Rare compounds — extremely limited batches." },
 }
 
-// Placeholder tiles for upcoming elements
 const PLACEHOLDER_TILES = [
   { num: 7, label: "New Element" },
   { num: 8, label: "New Element" },
@@ -28,56 +27,209 @@ const PLACEHOLDER_TILES = [
 
 // ─── Main export ───────────────────────────────────────────────────────────────
 export function MenuClient() {
-  const [selected, setSelected] = useState<Cookie>(COOKIES[0])
-  const [filter, setFilter] = useState<"all" | CookieGroup>("all")
+  const [selected, setSelected]       = useState<Cookie | null>(null)
+  const [modalOpen, setModalOpen]     = useState(false)
+  const [filter, setFilter]           = useState<"all" | CookieGroup>("all")
 
-  const filtered =
-    filter === "all"
-      ? COOKIES
-      : COOKIES.filter((c) => c.group === filter)
+  const filtered = filter === "all" ? COOKIES : COOKIES.filter((c) => c.group === filter)
 
-  const groupColor = GROUP_META[selected.group]?.color ?? "#FF3DA0"
+  function openCookie(cookie: Cookie) {
+    setSelected(cookie)
+    setModalOpen(true)
+  }
+
+  function closeModal() {
+    setModalOpen(false)
+    setTimeout(() => setSelected(null), 300)
+  }
+
+  // Lock body scroll when modal open
+  useEffect(() => {
+    if (modalOpen) document.body.style.overflow = "hidden"
+    else document.body.style.overflow = ""
+    return () => { document.body.style.overflow = "" }
+  }, [modalOpen])
+
+  // Close on Escape
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") closeModal() }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   return (
     <>
       <Navbar />
       <main className="min-h-screen" style={{ background: "#FAF6F0" }}>
-        {/* ── Page Header ──────────────────────────────────────────────── */}
         <PageHeader />
 
-        {/* ── Table + Detail ───────────────────────────────────────────── */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-20">
-          {/* Filter legend */}
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
           <FilterTabs filter={filter} onFilter={setFilter} />
 
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8 items-start">
-            {/* Periodic table grid */}
-            <div className="space-y-6">
-              <ElementGrid
-                cookies={filtered}
-                selected={selected}
-                onSelect={setSelected}
-                filter={filter}
-              />
-
-              {/* Unstable / Coming section */}
-              <UnstableTeaser />
-
-              {/* Allergen notice */}
-              <AllergenNotice />
-            </div>
-
-            {/* Sticky detail panel */}
-            <div className="lg:sticky lg:top-24">
-              <DetailPanel cookie={selected} groupColor={groupColor} />
-            </div>
+          <div className="mt-8 space-y-8">
+            <ElementGrid
+              cookies={filtered}
+              selected={selected}
+              onSelect={openCookie}
+              filter={filter}
+            />
+            <UnstableTeaser />
           </div>
         </section>
 
-        {/* ── Bottom CTA ───────────────────────────────────────────────── */}
-        <BuildCTA />
+        {/* Allergen notice — slim, above footer */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-12">
+          <AllergenNotice className="text-xs py-3 px-4" />
+        </div>
       </main>
       <Footer />
+
+      {/* ── Cookie modal ─────────────────────────────────────────────────── */}
+      {selected && (
+        <CookieModal cookie={selected} isOpen={modalOpen} onClose={closeModal} />
+      )}
+    </>
+  )
+}
+
+// ─── Cookie Modal ──────────────────────────────────────────────────────────────
+function CookieModal({ cookie, isOpen, onClose }: { cookie: Cookie; isOpen: boolean; onClose: () => void }) {
+  const meta = GROUP_META[cookie.group]
+  const groupColor = meta?.color ?? "#FF3DA0"
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+        style={{
+          opacity: isOpen ? 1 : 0,
+          transition: "opacity 0.25s ease",
+          pointerEvents: isOpen ? "auto" : "none",
+        }}
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        className="fixed z-50 inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center sm:p-6"
+        style={{ pointerEvents: isOpen ? "auto" : "none" }}
+      >
+        <div
+          className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl"
+          style={{
+            transform: isOpen ? "translateY(0) scale(1)" : "translateY(40px) scale(0.97)",
+            opacity: isOpen ? 1 : 0,
+            transition: "transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.25s ease",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm
+                       flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Photo */}
+          <div
+            className="relative w-full aspect-[4/3]"
+            style={{ background: `linear-gradient(140deg, ${groupColor}22 0%, ${groupColor}44 100%)` }}
+          >
+            {cookie.imageUrl ? (
+              <Image
+                src={cookie.imageUrl}
+                alt={cookie.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 448px"
+                priority
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span
+                  className="text-[100px] font-extrabold leading-none select-none"
+                  style={{ fontFamily: "var(--font-display)", color: `${groupColor}20` }}
+                >
+                  {cookie.symbol}
+                </span>
+              </div>
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+
+            {/* Atomic badge */}
+            <span className="absolute top-3 left-3 text-xs font-mono text-white/80 drop-shadow">
+              #{cookie.atomicNumber}
+            </span>
+            {/* Group badge */}
+            <span
+              className="absolute bottom-3 left-3 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full"
+              style={{
+                fontFamily: "var(--font-oswald)",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                backdropFilter: "blur(4px)",
+              }}
+            >
+              {meta?.label}
+            </span>
+          </div>
+
+          {/* Info */}
+          <div className="p-6 space-y-4">
+            {/* Name row */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2
+                  className="text-2xl font-extrabold text-black leading-tight"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  {cookie.name}
+                </h2>
+                <p className="text-sm text-black/40 mt-0.5">{meta?.description}</p>
+              </div>
+              <div
+                className="shrink-0 w-12 h-12 rounded-xl border-2 flex items-center justify-center text-base font-extrabold"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  borderColor: `${groupColor}50`,
+                  color: groupColor,
+                  background: `${groupColor}12`,
+                }}
+              >
+                {cookie.symbol}
+              </div>
+            </div>
+
+            <p className="text-sm text-black/60 leading-relaxed">{cookie.description}</p>
+
+            {/* Price */}
+            <div className="flex items-baseline gap-2">
+              <span
+                className="text-3xl font-extrabold"
+                style={{ fontFamily: "var(--font-display)", color: groupColor }}
+              >
+                ${cookie.price.toFixed(2)}
+              </span>
+              <span className="text-xs text-black/35 font-medium">per cookie</span>
+            </div>
+
+            {/* CTA */}
+            <Link
+              href={`/order?start=${cookie.slug}`}
+              onClick={onClose}
+              className="flex w-full items-center justify-center gap-2 rounded-xl font-bold text-sm py-3.5 text-white
+                         transition-all hover:opacity-90 shadow-md"
+              style={{ backgroundColor: groupColor, fontFamily: "var(--font-display)" }}
+            >
+              Add to Your Formula →
+            </Link>
+          </div>
+        </div>
+      </div>
     </>
   )
 }
@@ -86,7 +238,6 @@ export function MenuClient() {
 function PageHeader() {
   return (
     <div className="relative overflow-hidden py-20 px-4 text-center">
-      {/* Subtle dot grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.15]"
         style={{
@@ -116,8 +267,7 @@ function PageHeader() {
           </span>
         </h1>
         <p className="text-lg text-black/45 max-w-lg mx-auto leading-relaxed">
-          Six core elements, each a carefully tested formula. Click any tile
-          to explore the compound — then build your batch.
+          Six core elements, each a carefully tested formula. Click any tile to explore — then build your batch.
         </p>
       </div>
     </div>
@@ -125,19 +275,13 @@ function PageHeader() {
 }
 
 // ─── Filter Tabs ───────────────────────────────────────────────────────────────
-function FilterTabs({
-  filter,
-  onFilter,
-}: {
-  filter: "all" | CookieGroup
-  onFilter: (f: "all" | CookieGroup) => void
-}) {
+function FilterTabs({ filter, onFilter }: { filter: "all" | CookieGroup; onFilter: (f: "all" | CookieGroup) => void }) {
   const tabs = [
-    { key: "all", label: "All Elements", color: "#1a1a4e" },
-    { key: "classic",  label: "Classic",  color: GROUP_META.classic.color },
-    { key: "seasonal", label: "Seasonal", color: GROUP_META.seasonal.color },
-    { key: "custom",   label: "Custom",   color: GROUP_META.custom.color },
-    { key: "limited",  label: "Limited",  color: GROUP_META.limited.color },
+    { key: "all",      label: "All Elements", color: "#1a1a4e" },
+    { key: "classic",  label: "Classic",      color: GROUP_META.classic.color },
+    { key: "seasonal", label: "Seasonal",     color: GROUP_META.seasonal.color },
+    { key: "custom",   label: "Custom",       color: GROUP_META.custom.color },
+    { key: "limited",  label: "Limited",      color: GROUP_META.limited.color },
   ] as const
 
   return (
@@ -166,22 +310,15 @@ function FilterTabs({
 }
 
 // ─── Element Grid ──────────────────────────────────────────────────────────────
-function ElementGrid({
-  cookies,
-  selected,
-  onSelect,
-  filter,
-}: {
+function ElementGrid({ cookies, selected, onSelect, filter }: {
   cookies: Cookie[]
-  selected: Cookie
+  selected: Cookie | null
   onSelect: (c: Cookie) => void
   filter: "all" | CookieGroup
 }) {
   const showPlaceholders = filter === "all" || filter === "seasonal"
-
   return (
     <div className="space-y-4">
-      {/* Legend key */}
       <div className="flex flex-wrap gap-4">
         {Object.entries(GROUP_META).map(([key, meta]) => (
           <div key={key} className="flex items-center gap-1.5">
@@ -193,18 +330,15 @@ function ElementGrid({
           </div>
         ))}
       </div>
-
-      {/* Tiles grid */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
         {cookies.map((cookie) => (
           <ElementTile
             key={cookie.id}
             cookie={cookie}
-            isSelected={selected.id === cookie.id}
+            isSelected={selected?.id === cookie.id}
             onClick={() => onSelect(cookie)}
           />
         ))}
-        {/* Coming soon placeholders */}
         {showPlaceholders &&
           PLACEHOLDER_TILES.map((p) => <PlaceholderTile key={p.num} num={p.num} label={p.label} />)}
       </div>
@@ -213,15 +347,7 @@ function ElementGrid({
 }
 
 // ─── Element Tile ──────────────────────────────────────────────────────────────
-function ElementTile({
-  cookie,
-  isSelected,
-  onClick,
-}: {
-  cookie: Cookie
-  isSelected: boolean
-  onClick: () => void
-}) {
+function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelected: boolean; onClick: () => void }) {
   const colors = GROUP_COLORS[cookie.group]
   const meta = GROUP_META[cookie.group]
 
@@ -233,22 +359,19 @@ function ElementTile({
         "rounded-xl border-2 p-2 cursor-pointer select-none",
         "transition-all duration-200 group",
         colors.bg, colors.text,
-        isSelected
-          ? "scale-105 shadow-xl"
-          : "hover:-translate-y-1 hover:shadow-md",
+        isSelected ? "scale-105 shadow-xl" : "hover:-translate-y-1 hover:shadow-md",
         cookie.isUnstable ? "element-tile unstable" : "",
       ].join(" ")}
       style={{
         borderColor: isSelected ? meta.color : `${meta.color}70`,
-        boxShadow: isSelected ? `0 0 0 3px ${meta.color}40, 0 8px 24px ${meta.color}30` : `0 2px 8px ${meta.color}15`,
+        boxShadow: isSelected
+          ? `0 0 0 3px ${meta.color}40, 0 8px 24px ${meta.color}30`
+          : `0 2px 8px ${meta.color}15`,
       }}
     >
-      {/* Atomic number */}
       <span className="absolute top-1.5 left-2 text-[9px] font-mono opacity-40 leading-none">
         {cookie.atomicNumber}
       </span>
-
-      {/* Unstable indicator */}
       {cookie.isUnstable && (
         <span
           className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase leading-none px-1 py-0.5 rounded"
@@ -257,30 +380,19 @@ function ElementTile({
           ⚡
         </span>
       )}
-
-      {/* Symbol */}
       <span
         className="text-2xl sm:text-4xl font-extrabold leading-none mt-3"
         style={{ fontFamily: "var(--font-display)", color: meta.color }}
       >
         {cookie.symbol}
       </span>
-
-      {/* Name */}
       <span className="text-[10px] font-bold leading-tight text-center px-0.5 opacity-75 line-clamp-2"
         style={{ fontFamily: "var(--font-sans)" }}>
         {cookie.name}
       </span>
-
-      {/* Price */}
-      <span
-        className="text-[9px] font-bold mt-0.5"
-        style={{ fontFamily: "var(--font-oswald)", color: meta.color }}
-      >
+      <span className="text-[9px] font-bold mt-0.5" style={{ fontFamily: "var(--font-oswald)", color: meta.color }}>
         ${cookie.price.toFixed(2)}
       </span>
-
-      {/* Selected indicator dot */}
       {isSelected && (
         <span
           className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
@@ -296,272 +408,52 @@ function PlaceholderTile({ num, label }: { num: number; label: string }) {
   return (
     <div className="relative aspect-square flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-black/10 p-2 opacity-40 cursor-not-allowed">
       <span className="absolute top-1.5 left-2 text-[9px] font-mono opacity-40 leading-none">{num}</span>
-      <span
-        className="text-2xl font-extrabold text-black/20 leading-none mt-3"
-        style={{ fontFamily: "var(--font-display)" }}
-      >
-        ?
-      </span>
-      <span className="text-[8px] font-medium text-center text-black/30 leading-tight"
-        style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
+      <span className="text-2xl font-extrabold text-black/20 leading-none mt-3" style={{ fontFamily: "var(--font-display)" }}>?</span>
+      <span className="text-[8px] font-medium text-center text-black/30 leading-tight" style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
         {label}
       </span>
     </div>
   )
 }
 
-// ─── Detail Panel ──────────────────────────────────────────────────────────────
-function DetailPanel({ cookie, groupColor }: { cookie: Cookie; groupColor: string }) {
-  const meta = GROUP_META[cookie.group]
-
-  return (
-    <GlowCard
-      customSize
-      glowColor="pink"
-      className="w-full !aspect-auto !rounded-2xl overflow-hidden bg-white"
-    >
-      {/* Photo */}
-      <div
-        className="relative w-full aspect-[4/3] rounded-xl overflow-hidden"
-        style={{ background: `linear-gradient(140deg, ${groupColor}22 0%, ${groupColor}44 100%)` }}
-      >
-        {cookie.imageUrl ? (
-          <Image
-            key={cookie.id}
-            src={cookie.imageUrl}
-            alt={cookie.name}
-            fill
-            className="object-cover transition-opacity duration-300"
-            sizes="(max-width: 1024px) 100vw, 380px"
-            priority
-          />
-        ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <span
-              className="text-[100px] font-extrabold leading-none select-none"
-              style={{ fontFamily: "var(--font-display)", color: `${groupColor}20` }}
-            >
-              {cookie.symbol}
-            </span>
-            <span
-              className="text-xs font-semibold uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-oswald)", color: `${groupColor}60` }}
-            >
-              Photo Coming Soon
-            </span>
-          </div>
-        )}
-        {/* Atomic number overlay */}
-        <span className="absolute top-3 left-3 text-xs font-mono z-10" style={{ color: cookie.imageUrl ? "white" : `${groupColor}60`, textShadow: cookie.imageUrl ? "0 1px 3px rgba(0,0,0,0.5)" : "none" }}>
-          #{cookie.atomicNumber}
-        </span>
-        {/* Group badge */}
-        <span
-          className="absolute top-3 right-3 z-10 text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full"
-          style={{
-            fontFamily: "var(--font-oswald)",
-            background: cookie.imageUrl ? "rgba(0,0,0,0.45)" : `${groupColor}20`,
-            color: cookie.imageUrl ? "white" : groupColor,
-            border: cookie.imageUrl ? "none" : `1px solid ${groupColor}40`,
-            backdropFilter: cookie.imageUrl ? "blur(4px)" : "none",
-          }}
-        >
-          {meta?.label}
-        </span>
-        {/* Unstable badge */}
-        {cookie.isUnstable && (
-          <span
-            className="absolute bottom-3 left-3 z-10 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
-            style={{
-              fontFamily: "var(--font-oswald)",
-              background: `${groupColor}25`,
-              color: groupColor,
-            }}
-          >
-            Unstable Element
-          </span>
-        )}
-        {/* Gradient overlay on real photos so text reads cleanly */}
-        {cookie.imageUrl && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-black/10 z-[1]" />
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="space-y-4 pt-2 pb-1 px-1">
-        {/* Name + symbol row */}
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <h2
-              className="text-2xl font-extrabold text-black leading-tight"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {cookie.name}
-            </h2>
-            <p className="text-sm text-black/40 mt-0.5">{meta?.description}</p>
-          </div>
-          <div
-            className="shrink-0 w-12 h-12 rounded-xl border-2 flex items-center justify-center text-base font-extrabold"
-            style={{
-              fontFamily: "var(--font-display)",
-              borderColor: `${groupColor}50`,
-              color: groupColor,
-              background: `${groupColor}12`,
-            }}
-          >
-            {cookie.symbol}
-          </div>
-        </div>
-
-        {/* Description */}
-        <p className="text-sm text-black/55 leading-relaxed">{cookie.description}</p>
-
-        {/* Price */}
-        <div className="flex items-baseline gap-2">
-          <span
-            className="text-4xl font-extrabold"
-            style={{ fontFamily: "var(--font-display)", color: groupColor }}
-          >
-            ${cookie.price.toFixed(2)}
-          </span>
-          <span className="text-xs text-black/35 font-medium">per cookie</span>
-        </div>
-
-        {/* CTA */}
-        <div className="space-y-2 pt-1">
-          <Link
-            href={`/order?start=${cookie.slug}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl font-bold text-sm py-3.5 text-white
-                       transition-all hover:opacity-90 hover:-translate-y-0.5 shadow-md"
-            style={{
-              backgroundColor: groupColor,
-              fontFamily: "var(--font-display)",
-            }}
-          >
-            Add to Your Formula →
-          </Link>
-          <p
-            className="text-center text-[10px] text-black/30 font-medium uppercase tracking-widest"
-            style={{ fontFamily: "var(--font-oswald)" }}
-          >
-            Individual · Minimum order of 4 cookies
-          </p>
-        </div>
-      </div>
-    </GlowCard>
-  )
-}
-
 // ─── Unstable Teaser ───────────────────────────────────────────────────────────
 function UnstableTeaser() {
   return (
-    <div
-      className="rounded-2xl border-2 border-dashed border-[#FF9F43]/30 p-6 space-y-3"
-      style={{ background: "#FF9F4308" }}
-    >
+    <div className="rounded-2xl border-2 border-dashed border-[#FF9F43]/30 p-6 space-y-3" style={{ background: "#FF9F4308" }}>
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-lg border-2 border-dashed flex items-center justify-center text-sm font-extrabold animate-pulse"
-          style={{
-            fontFamily: "var(--font-display)",
-            borderColor: "#FF9F43",
-            color: "#FF9F43",
-          }}
+          style={{ fontFamily: "var(--font-display)", borderColor: "#FF9F43", color: "#FF9F43" }}
         >
           ?
         </div>
         <div>
-          <h3
-            className="font-extrabold text-base text-black"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
+          <h3 className="font-extrabold text-base text-black" style={{ fontFamily: "var(--font-display)" }}>
             Unstable Elements
           </h3>
-          <span
-            className="text-[10px] font-semibold uppercase tracking-widest text-[#FF9F43]"
-            style={{ fontFamily: "var(--font-oswald)" }}
-          >
+          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#FF9F43]" style={{ fontFamily: "var(--font-oswald)" }}>
             Seasonal · Limited
           </span>
         </div>
       </div>
       <p className="text-sm text-black/45 leading-relaxed">
         Seasonal and limited-run cookies rotate throughout the year. These{" "}
-        <span
-          className="text-[#FF9F43]"
-          style={{ fontFamily: "var(--font-script)", fontSize: "1.1em" }}
-        >
+        <span className="text-[#FF9F43]" style={{ fontFamily: "var(--font-script)", fontSize: "1.1em" }}>
           unstable elements
         </span>{" "}
         drop without warning — follow us to catch them before they decay.
       </p>
       <div className="flex gap-3">
         <a
-          href="#"
+          href="https://www.instagram.com/kuriouscookielab/"
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-xs font-bold text-[#FF9F43] border border-[#FF9F43]/40 rounded-full px-4 py-1.5 hover:bg-[#FF9F43]/10 transition-colors"
           style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}
         >
           Follow on Instagram
         </a>
-        <a
-          href="#"
-          className="text-xs font-bold text-[#FF9F43] border border-[#FF9F43]/40 rounded-full px-4 py-1.5 hover:bg-[#FF9F43]/10 transition-colors"
-          style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}
-        >
-          Follow on TikTok
-        </a>
       </div>
     </div>
-  )
-}
-
-// ─── Build CTA ─────────────────────────────────────────────────────────────────
-function BuildCTA() {
-  return (
-    <section className="py-24 px-4" style={{ background: "#1a1a4e" }}>
-      <div className="max-w-3xl mx-auto text-center space-y-7">
-        <span
-          className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30"
-          style={{ fontFamily: "var(--font-oswald)" }}
-        >
-          Ready to Order
-        </span>
-        <h2 className="leading-[1.1]">
-          <span
-            className="block text-4xl sm:text-5xl font-extrabold text-white"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Build Your
-          </span>
-          <span
-            className="block text-5xl sm:text-6xl text-[#FF66C4] mt-1"
-            style={{ fontFamily: "var(--font-script)", fontWeight: 400 }}
-          >
-            Formula.
-          </span>
-        </h2>
-        <p className="text-base text-white/40 max-w-sm mx-auto leading-relaxed">
-          Choose a box size, select your elements, and we synthesize your batch fresh to order.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link
-            href="/order"
-            className="rounded-2xl bg-[#FF3DA0] text-white font-bold text-lg px-10 py-4
-                       hover:bg-[#FF66C4] transition-all shadow-xl hover:-translate-y-0.5"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Start Your Experiment →
-          </Link>
-          <Link
-            href="/"
-            className="rounded-2xl border-2 border-white/20 text-white/70 font-bold text-lg px-10 py-4
-                       hover:border-white/40 hover:text-white transition-all"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Back to Home
-          </Link>
-        </div>
-      </div>
-    </section>
   )
 }

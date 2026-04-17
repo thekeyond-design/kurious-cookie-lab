@@ -221,7 +221,7 @@ function MeetTheScientistSection() {
               </div>
 
               <p className="text-base text-black/60 leading-relaxed">
-                Malia Walker is the founder and head baker behind Kurious Cookie Lab — a STEM-inspired artisan cookie brand born right here in Guilford County, NC. With a deep love for both science and community, Malia set out to prove that the most powerful lessons happen when you&apos;re genuinely having fun.
+                Malia Walker is the founder and head baker behind Kurious Cookie Lab — a STEM-inspired artisan cookie brand built on a deep love for science and community. She set out to prove that the most powerful lessons happen when you&apos;re genuinely having fun.
               </p>
 
               <p className="text-base text-black/60 leading-relaxed">

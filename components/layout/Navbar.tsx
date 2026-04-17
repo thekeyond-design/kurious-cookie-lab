@@ -163,8 +163,8 @@ export function Navbar() {
         <div className="absolute left-1/2 -translate-x-1/2">
           <Link href="/" className="block">
             <span
-              className="text-xl font-extrabold leading-none tracking-tight whitespace-nowrap"
-              style={{ fontFamily: "var(--font-adws, var(--font-display))" }}
+              className="text-xl leading-none whitespace-nowrap"
+              style={{ fontFamily: "var(--font-adws, var(--font-display))", letterSpacing: "0.04em" }}
             >
               Kurious<span className="text-[#FF3DA0]">Cookie</span>
               <span className="text-black/35 font-semibold"> Lab</span>

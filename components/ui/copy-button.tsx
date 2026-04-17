@@ -14,13 +14,14 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 text-[11px] font-semibold rounded-full px-3 py-1 transition-all"
+      className="inline-flex items-center gap-1.5 text-[11px] font-bold rounded-full px-3 py-1.5 transition-all hover:-translate-y-0.5"
       style={{
         fontFamily: "var(--font-oswald)",
         letterSpacing: "0.06em",
-        background: copied ? "#3EC9C910" : "rgba(0,0,0,0.04)",
-        color: copied ? "#3EC9C9" : "rgba(0,0,0,0.35)",
-        border: `1px solid ${copied ? "#3EC9C940" : "transparent"}`,
+        background: copied ? "#3EC9C9" : "rgba(0,0,0,0.07)",
+        color: copied ? "white" : "rgba(0,0,0,0.65)",
+        border: `1.5px solid ${copied ? "#3EC9C9" : "rgba(0,0,0,0.12)"}`,
+        boxShadow: copied ? "0 2px 8px #3EC9C940" : "none",
       }}
     >
       {copied ? "✓ Copied!" : `Copy ${label}`}
