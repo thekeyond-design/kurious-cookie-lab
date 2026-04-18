@@ -5,82 +5,90 @@ import { COOKIES } from "@/lib/cookies"
 import { BOX_CONFIG } from "@/types"
 import type { FulfillmentType } from "@/types"
 
+const NC_TAX_RATE = 0.0675
+
+type CartItemInput = { boxSize: number; cookieIds: string[] }
+
+function buildLineItemsForBatch(item: CartItemInput): {
+  lineItems: { price_data: { currency: string; product_data: { name: string; description?: string }; unit_amount: number }; quantity: number }[]
+  subtotalCents: number
+} {
+  const { boxSize, cookieIds } = item
+  const config = BOX_CONFIG[boxSize]
+  const cookies = cookieIds.map((id) => COOKIES.find((c) => c.id === id)).filter(Boolean) as typeof COOKIES
+
+  if (boxSize > 0 && config.flatPrice) {
+    return {
+      lineItems: [{
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${config.label} — ${boxSize} Cookies`,
+            description: cookies.map((c) => c.name).join(", "),
+          },
+          unit_amount: config.flatPrice * 100,
+        },
+        quantity: 1,
+      }],
+      subtotalCents: config.flatPrice * 100,
+    }
+  }
+
+  const subtotalCents = cookies.reduce((sum, c) => sum + Math.round(c.price * 100), 0)
+  return {
+    lineItems: cookies.map((c) => ({
+      price_data: {
+        currency: "usd",
+        product_data: { name: c.name, description: c.description },
+        unit_amount: Math.round(c.price * 100),
+      },
+      quantity: 1,
+    })),
+    subtotalCents,
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      boxSize,
-      selectedCookieIds,
-      instructions,
+      items,
       fulfillment,
       customerName,
       customerEmail,
+      instructions,
     }: {
-      boxSize: number
-      selectedCookieIds: string[]
-      instructions: string
+      items: CartItemInput[]
       fulfillment: FulfillmentType
       customerName: string
       customerEmail: string
+      instructions?: string
     } = body
 
     // ── Validate inputs ────────────────────────────────────────────────────
-    if (!selectedCookieIds?.length)
-      return NextResponse.json({ error: "No cookies selected." }, { status: 400 })
+    if (!items?.length)
+      return NextResponse.json({ error: "No items in cart." }, { status: 400 })
     if (!fulfillment)
       return NextResponse.json({ error: "No fulfillment method selected." }, { status: 400 })
     if (!customerName?.trim() || !customerEmail?.trim())
       return NextResponse.json({ error: "Name and email are required." }, { status: 400 })
 
-    // ── Resolve cookie data ────────────────────────────────────────────────
-    const selectedCookies = selectedCookieIds
-      .map((id) => COOKIES.find((c) => c.id === id))
-      .filter(Boolean) as typeof COOKIES
+    // ── Build Stripe line items from all cart batches ───────────────────────
+    let allLineItems: ReturnType<typeof buildLineItemsForBatch>["lineItems"] = []
+    let subtotalCents = 0
 
-    if (selectedCookies.length !== selectedCookieIds.length)
-      return NextResponse.json({ error: "Invalid cookie selection." }, { status: 400 })
-
-    const config = BOX_CONFIG[boxSize]
-
-    // ── Calculate pricing ──────────────────────────────────────────────────
-    let subtotalCents: number
-    let stripeLineItems: { price_data: { currency: string; product_data: { name: string; description?: string }; unit_amount: number }; quantity: number }[]
-
-    if (boxSize > 0 && config.flatPrice) {
-      // Flat-price box
-      subtotalCents = config.flatPrice * 100
-      stripeLineItems = [{
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: `${config.label} — ${boxSize} Cookies`,
-            description: selectedCookies.map((c) => c.name).join(", "),
-          },
-          unit_amount: subtotalCents,
-        },
-        quantity: 1,
-      }]
-    } else {
-      // Individual — per cookie
-      subtotalCents = selectedCookies.reduce((sum, c) => sum + Math.round(c.price * 100), 0)
-      stripeLineItems = selectedCookies.map((c) => ({
-        price_data: {
-          currency: "usd",
-          product_data: { name: c.name, description: c.description },
-          unit_amount: Math.round(c.price * 100),
-        },
-        quantity: 1,
-      }))
+    for (const item of items) {
+      const { lineItems, subtotalCents: batchCents } = buildLineItemsForBatch(item)
+      allLineItems = allLineItems.concat(lineItems)
+      subtotalCents += batchCents
     }
 
-    const NC_TAX_RATE = 0.0675
     const shippingFeeCents = SHIPPING_FEES[fulfillment] ?? 0
     const taxCents = Math.round(subtotalCents * NC_TAX_RATE)
     const totalCents = subtotalCents + shippingFeeCents + taxCents
 
-    // Add shipping as a line item if applicable
     if (shippingFeeCents > 0) {
-      stripeLineItems.push({
+      allLineItems.push({
         price_data: {
           currency: "usd",
           product_data: { name: `Fulfillment — ${fulfillment.replace(/_/g, " ")}` },
@@ -90,8 +98,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Add NC sales tax as a line item
-    stripeLineItems.push({
+    allLineItems.push({
       price_data: {
         currency: "usd",
         product_data: { name: "NC Sales Tax (6.75%)" },
@@ -102,19 +109,20 @@ export async function POST(request: NextRequest) {
 
     // ── Save pending order to Supabase ─────────────────────────────────────
     const supabase = createServiceClient()
+    const email = customerEmail.trim().toLowerCase()
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         customer_name: customerName.trim(),
-        customer_email: customerEmail.trim().toLowerCase(),
-        box_size: boxSize,
+        customer_email: email,
+        box_size: items.length === 1 ? items[0].boxSize : 0,
         fulfillment,
-        special_instructions: instructions || null,
+        special_instructions: instructions?.trim() || null,
         status: "pending",
         subtotal: subtotalCents / 100,
         shipping_fee: shippingFeeCents / 100,
-        total: totalCents / 100, // includes tax
+        total: totalCents / 100,
       })
       .select()
       .single()
@@ -122,30 +130,36 @@ export async function POST(request: NextRequest) {
     if (orderError || !order)
       return NextResponse.json({ error: "Failed to create order." }, { status: 500 })
 
-    // Save order items — evenly split quantities for box orders
-    const quantityPerFlavor = boxSize > 0
-      ? Math.floor(boxSize / selectedCookies.length)
-      : 1
-
-    // Get product UUIDs from Supabase
-    const slugs = selectedCookies.map((c) => c.slug)
+    // Save all order items across all batches
+    const allCookieIds = items.flatMap((i) => i.cookieIds)
+    const uniqueSlugs = [...new Set(
+      allCookieIds.map((id) => COOKIES.find((c) => c.id === id)?.slug).filter(Boolean) as string[]
+    )]
     const { data: products } = await supabase
       .from("products")
       .select("id, slug")
-      .in("slug", slugs)
+      .in("slug", uniqueSlugs)
 
     if (products?.length) {
-      await supabase.from("order_items").insert(
-        selectedCookies.map((c) => {
-          const product = products.find((p) => p.slug === c.slug)
+      const orderItemRows = items.flatMap((item) => {
+        const { boxSize, cookieIds } = item
+        const quantityPer = boxSize > 0 ? Math.floor(boxSize / cookieIds.length) : 1
+        return cookieIds.map((id) => {
+          const cookie = COOKIES.find((c) => c.id === id)
+          const product = products.find((p) => p.slug === cookie?.slug)
+          if (!product) return null
           return {
             order_id: order.id,
-            product_id: product!.id,
-            quantity: quantityPerFlavor,
-            unit_price: c.price,
+            product_id: product.id,
+            quantity: quantityPer,
+            unit_price: cookie!.price,
           }
-        })
-      )
+        }).filter(Boolean)
+      }) as { order_id: string; product_id: string; quantity: number; unit_price: number }[]
+
+      if (orderItemRows.length) {
+        await supabase.from("order_items").insert(orderItemRows)
+      }
     }
 
     // ── Create Stripe Checkout Session ────────────────────────────────────
@@ -153,18 +167,17 @@ export async function POST(request: NextRequest) {
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: stripeLineItems,
-      customer_email: customerEmail.trim().toLowerCase(),
+      line_items: allLineItems,
+      customer_email: email,
       metadata: {
         order_id: order.id,
         customer_name: customerName.trim(),
         fulfillment,
       },
       success_url: `${origin}/order/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/order`,
+      cancel_url: `${origin}/checkout`,
     })
 
-    // Store session ID on the order
     await supabase
       .from("orders")
       .update({ stripe_checkout_session_id: session.id })

@@ -4,44 +4,18 @@ import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-import { Cookie, BOX_CONFIG, FulfillmentType } from "@/types"
+import { Cookie, BOX_CONFIG } from "@/types"
 import { COOKIES, GROUP_COLORS } from "@/lib/cookies"
 import { PeriodicTable } from "@/components/lab/PeriodicTable"
 import { AllergenNotice } from "@/components/ui/allergen-notice"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+import { useCart } from "@/components/cart/CartContext"
 
 const FEATURED_SIZES = [0, 6, 12]
 const ALL_SIZES = [0, 6, 12, 20, 26, 32]
 const MAX_INSTRUCTIONS = 500
-
-const FULFILLMENT_OPTIONS: { value: FulfillmentType; label: string; sub: string; fee: string }[] = [
-  { value: "pickup",            label: "Pickup",            sub: "Guilford County, NC",  fee: "Free" },
-  { value: "local_delivery",    label: "Local Delivery",    sub: "Guilford County area", fee: "$5.00" },
-  { value: "nc_shipping",       label: "NC Shipping",       sub: "North Carolina",       fee: "$8.00" },
-]
-
-const FULFILLMENT_FEES: Record<string, number> = {
-  pickup: 0,
-  local_delivery: 5.00,
-  nc_shipping: 8.00,
-}
-
 const NC_TAX_RATE = 0.0675
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
-// ─── Spinner ──────────────────────────────────────────────────────────────────
-function Spinner() {
-  return (
-    <svg className="animate-spin w-4 h-4 inline-block mr-2" viewBox="0 0 24 24" fill="none">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-    </svg>
-  )
-}
 
 // ─── Decorative floating tiles ────────────────────────────────────────────────
 function FloatingTile({ symbol, top, left, right, bottom, rotate, opacity }: {
@@ -66,14 +40,10 @@ export function OrderBuilder() {
 
   const [boxSize, setBoxSize]           = useState<number>(6)
   const [selectedIds, setSelectedIds]   = useState<string[]>([])
-  const [showMore, setShowMore]         = useState(false)
   const [instructions, setInstructions] = useState("")
-  const [fulfillment, setFulfillment]   = useState<FulfillmentType | null>(null)
-  const [customerName, setCustomerName] = useState("")
-  const [customerEmail, setCustomerEmail] = useState("")
-  const [emailTouched, setEmailTouched] = useState(false)
-  const [loading, setLoading]           = useState(false)
-  const [checkoutError, setCheckoutError] = useState("")
+  const [showMore, setShowMore]         = useState(false)
+  const [added, setAdded]               = useState(false)
+  const { addItem } = useCart()
 
   // Pre-select cookie from ?start= URL param
   useEffect(() => {
@@ -88,38 +58,14 @@ export function OrderBuilder() {
 
   const visibleSizes    = showMore ? ALL_SIZES : FEATURED_SIZES
   const config          = BOX_CONFIG[boxSize]
-  const emailValid      = isValidEmail(customerEmail)
-  const emailError      = emailTouched && customerEmail.length > 0 && !emailValid
-  const canCheckout     = selectedIds.length > 0 && fulfillment !== null
-  const canSubmit       = canCheckout && customerName.trim().length > 0 && emailValid
+  const canAddToCart    = selectedIds.length > 0
+  const progressStep    = selectedIds.length > 0 ? 2 : boxSize ? 1 : 1
 
-  // Which step is furthest complete (for progress bar)
-  const progressStep = emailValid && customerName.trim()
-    ? 5 : fulfillment ? 4 : selectedIds.length > 0 ? 3 : boxSize ? 2 : 1
-
-  async function handleCheckout() {
-    setLoading(true)
-    setCheckoutError("")
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          boxSize,
-          selectedCookieIds: selectedIds,
-          instructions,
-          fulfillment,
-          customerName,
-          customerEmail,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok || data.error) throw new Error(data.error ?? "Something went wrong.")
-      window.location.href = data.url
-    } catch (err) {
-      setCheckoutError(err instanceof Error ? err.message : "Something went wrong. Please try again.")
-      setLoading(false)
-    }
+  function handleAddToCart() {
+    if (!canAddToCart) return
+    addItem(boxSize, selectedIds)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2000)
   }
 
   function toggleCookie(cookie: Cookie) {
@@ -291,102 +237,12 @@ export function OrderBuilder() {
                 </span>
               </div>
               <p className="text-[11px] text-black/30" style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-                OPTIONAL · We read every note before baking.
+                OPTIONAL · You can also add notes at checkout.
               </p>
             </StepCard>
 
             {/* Allergen notice */}
             <AllergenNotice />
-
-            {/* Step 4 — Fulfillment */}
-            <StepCard number={4} label="How Should We Deliver?">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {FULFILLMENT_OPTIONS.map((opt) => {
-                  const active = fulfillment === opt.value
-                  return (
-                    <button
-                      key={opt.value}
-                      onClick={() => setFulfillment(opt.value)}
-                      className="rounded-xl border-2 p-4 text-left transition-all duration-150 hover:-translate-y-0.5"
-                      style={{
-                        borderColor: active ? "#4DAEEA" : "rgba(0,0,0,0.08)",
-                        background: active ? "#4DAEEA10" : "white",
-                        boxShadow: active ? "0 2px 12px #4DAEEA20" : undefined,
-                      }}
-                    >
-                      <div className="font-extrabold text-sm text-black"
-                        style={{ fontFamily: "var(--font-display)" }}>
-                        {opt.label}
-                      </div>
-                      <div className="text-[10px] text-black/40 mt-0.5"
-                        style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-                        {opt.sub.toUpperCase()}
-                      </div>
-                      <div className="text-sm font-bold mt-1.5" style={{ color: "#4DAEEA" }}>
-                        {opt.fee}
-                      </div>
-                    </button>
-                  )
-                })}
-              </div>
-            </StepCard>
-
-            {/* Step 5 — Customer Info (animated reveal) */}
-            <div
-              style={{
-                overflow: "hidden",
-                maxHeight: fulfillment ? "600px" : "0",
-                opacity: fulfillment ? 1 : 0,
-                transform: fulfillment ? "translateY(0)" : "translateY(12px)",
-                transition: "max-height 0.4s ease, opacity 0.35s ease, transform 0.35s ease",
-              }}
-            >
-              <StepCard number={5} label="Your Details">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-black/40 uppercase tracking-widest"
-                      style={{ fontFamily: "var(--font-oswald)" }}>
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="Jane Smith"
-                      autoComplete="name"
-                      className="w-full rounded-xl border-2 border-black/10 bg-white px-4 py-3 text-sm
-                                 focus:outline-none focus:border-[#FF3DA0] transition-colors placeholder:text-black/25"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-black/40 uppercase tracking-widest"
-                      style={{ fontFamily: "var(--font-oswald)" }}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
-                      onBlur={() => setEmailTouched(true)}
-                      placeholder="jane@example.com"
-                      autoComplete="email"
-                      className="w-full rounded-xl border-2 bg-white px-4 py-3 text-sm
-                                 focus:outline-none transition-colors placeholder:text-black/25"
-                      style={{
-                        borderColor: emailError ? "#EF4444" : "rgba(0,0,0,0.10)",
-                        outlineColor: emailError ? "#EF4444" : "#FF3DA0",
-                      }}
-                    />
-                    {emailError && (
-                      <p className="text-xs text-red-500">Please enter a valid email address.</p>
-                    )}
-                  </div>
-                </div>
-                <p className="text-[11px] text-black/30" style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-                  YOUR EMAIL RECEIVES THE ORDER CONFIRMATION · PAYMENTS SECURED BY STRIPE
-                </p>
-              </StepCard>
-            </div>
 
           </div>
 
@@ -395,50 +251,27 @@ export function OrderBuilder() {
             <OrderSummary
               boxSize={boxSize}
               selectedCookies={selectedCookies}
-              fulfillment={fulfillment}
             />
 
-            {checkoutError && (
-              <p className="text-xs text-red-500 text-center font-medium">{checkoutError}</p>
-            )}
-
             <button
-              disabled={!canSubmit || loading}
-              onClick={handleCheckout}
-              className="w-full py-4 rounded-2xl font-extrabold text-base transition-all duration-200 flex items-center justify-center gap-1"
+              disabled={!canAddToCart}
+              onClick={handleAddToCart}
+              className="w-full py-4 rounded-2xl font-extrabold text-base transition-all duration-200 active:scale-95"
               style={{
                 fontFamily: "var(--font-display)",
-                background: canSubmit && !loading ? "#FF3DA0" : "rgba(0,0,0,0.08)",
-                color: canSubmit && !loading ? "white" : "rgba(0,0,0,0.3)",
-                cursor: canSubmit && !loading ? "pointer" : "not-allowed",
-                boxShadow: canSubmit && !loading ? "0 4px 20px #FF3DA040" : undefined,
-                transform: canSubmit && !loading ? undefined : undefined,
+                background: canAddToCart ? (added ? "#3EC9C9" : "#FF3DA0") : "rgba(0,0,0,0.08)",
+                color: canAddToCart ? "white" : "rgba(0,0,0,0.3)",
+                cursor: canAddToCart ? "pointer" : "not-allowed",
+                boxShadow: canAddToCart ? "0 4px 20px #FF3DA040" : undefined,
               }}
             >
-              {loading && <Spinner />}
-              {loading
-                ? "Preparing your batch…"
-                : canSubmit
-                  ? "Proceed to Checkout →"
-                  : "Complete all steps to continue"}
+              {added ? "Added to Cart ✓" : canAddToCart ? "Add to Cart →" : "Select elements to continue"}
             </button>
 
-            {!canCheckout && selectedIds.length === 0 && (
+            {!canAddToCart && (
               <p className="text-center text-xs text-black/30"
                 style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
                 STEP 2 · SELECT AT LEAST ONE ELEMENT
-              </p>
-            )}
-            {selectedIds.length > 0 && !fulfillment && (
-              <p className="text-center text-xs text-black/30"
-                style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-                STEP 4 · CHOOSE A FULFILLMENT METHOD
-              </p>
-            )}
-            {fulfillment && !canSubmit && (
-              <p className="text-center text-xs text-black/30"
-                style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}>
-                STEP 5 · ENTER YOUR DETAILS ABOVE
               </p>
             )}
           </div>
@@ -453,7 +286,7 @@ export function OrderBuilder() {
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
 function ProgressBar({ step }: { step: number }) {
-  const steps = ["Batch Size", "Elements", "Instructions", "Fulfillment", "Details"]
+  const steps = ["Batch Size", "Elements"]
   return (
     <div className="flex items-center gap-1">
       {steps.map((label, i) => {
@@ -513,11 +346,9 @@ function StepCard({ number, label, children }: { number: number; label: string; 
 function OrderSummary({
   boxSize,
   selectedCookies,
-  fulfillment,
 }: {
   boxSize: number
   selectedCookies: Cookie[]
-  fulfillment: FulfillmentType | null
 }) {
   const config = BOX_CONFIG[boxSize]
 
@@ -581,30 +412,25 @@ function OrderSummary({
         const subtotal = config.flatPrice
           ? config.flatPrice
           : selectedCookies.reduce((s, c) => s + c.price, 0)
-        const shipping = fulfillment ? (FULFILLMENT_FEES[fulfillment] ?? 0) : null
         const tax = Math.round(subtotal * NC_TAX_RATE * 100) / 100
-        const total = subtotal + (shipping ?? 0) + tax
-
         return (
           <div className="border-t border-black/8 pt-3 space-y-1.5">
             <div className="flex items-center justify-between text-xs text-black/45">
               <span>Subtotal</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            {shipping !== null && (
-              <div className="flex items-center justify-between text-xs text-black/45">
-                <span>Fulfillment ({FULFILLMENT_OPTIONS.find((o) => o.value === fulfillment)?.label})</span>
-                <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
-              </div>
-            )}
             <div className="flex items-center justify-between text-xs text-black/45">
               <span>NC Sales Tax (6.75%)</span>
               <span>${tax.toFixed(2)}</span>
             </div>
+            <div className="flex items-center justify-between text-xs text-black/30 italic">
+              <span>Fulfillment</span>
+              <span>at checkout</span>
+            </div>
             <div className="flex items-baseline justify-between pt-1 border-t border-black/8 mt-1">
-              <span className="text-xs text-black/40">{shipping === null ? "Estimated Total" : "Total"}</span>
+              <span className="text-xs text-black/40">Batch Total</span>
               <span className="text-2xl font-extrabold text-[#FF3DA0]" style={{ fontFamily: "var(--font-display)" }}>
-                ${total.toFixed(2)}
+                ${(subtotal + tax).toFixed(2)}
               </span>
             </div>
           </div>

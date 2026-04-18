@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Story_Script, Oswald, Arimo, Nunito, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/components/cart/CartContext";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 const storyScript = Story_Script({
   variable: "--story-script",
@@ -45,7 +47,10 @@ export default function RootLayout({
       className={`${storyScript.variable} ${oswald.variable} ${arimo.variable} ${nunito.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#FAF6F0] text-black">
-        {children}
+        <CartProvider>
+          {children}
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

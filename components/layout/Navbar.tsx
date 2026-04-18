@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { ShoppingBag, User, ChevronDown } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import { useCart } from "@/components/cart/CartContext"
 
 const ELEMENTS_DROPDOWN = [
   {
@@ -36,6 +37,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { openCart, itemCount } = useCart()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -181,13 +183,18 @@ export function Navbar() {
           <NavUser />
 
           {/* Cart */}
-          <Link
-            href="/cart"
+          <button
+            onClick={openCart}
             className="relative flex items-center justify-center w-9 h-9 rounded-xl border border-black/10 bg-white hover:border-[#FF3DA0] hover:text-[#FF3DA0] transition-all text-black/50"
             aria-label="Cart"
           >
             <ShoppingBag className="w-4 h-4" />
-          </Link>
+            {itemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#FF3DA0] text-white text-[9px] font-extrabold flex items-center justify-center" style={{ fontFamily: "var(--font-display)" }}>
+                {itemCount > 9 ? "9+" : itemCount}
+              </span>
+            )}
+          </button>
 
           {/* Mobile hamburger */}
           <button
@@ -262,13 +269,13 @@ export function Navbar() {
             <User className="w-4 h-4" />
             Sign In / Account
           </Link>
-          <Link
-            href="/cart"
-            className="flex items-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold text-black/60"
+          <button
+            onClick={() => { setMobileOpen(false); openCart() }}
+            className="flex items-center gap-2 py-2.5 px-3 rounded-xl text-sm font-semibold text-black/60 w-full text-left"
           >
             <ShoppingBag className="w-4 h-4" />
-            Cart
-          </Link>
+            Cart {itemCount > 0 && <span className="text-[#FF3DA0] font-extrabold">({itemCount})</span>}
+          </button>
         </div>
       </div>
     </header>
