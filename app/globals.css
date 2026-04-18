@@ -195,3 +195,27 @@
     @apply font-sans;
   }
 }
+
+/* ─── Hero CTA neon glow ───────────────────────────────────────────────────── */
+.lab-glow-btn {
+  transition: background-color 0.2s ease, box-shadow 0.3s ease, transform 0.15s ease;
+}
+.lab-glow-btn:hover {
+  background-color: #e8007f;
+  box-shadow:
+    0 0 0 3px rgba(255, 61, 160, 0.22),
+    0 0 20px 4px rgba(255, 61, 160, 0.32),
+    0 8px 24px rgba(255, 61, 160, 0.18);
+}
+
+/* ─── Lab grid light sweep ─────────────────────────────────────────────────── */
+@keyframes lab-sweep {
+  0%, 12%  { transform: translateX(-120%); opacity: 0; }
+  18%      { opacity: 1; }
+  42%      { transform: translateX(320%); opacity: 1; }
+  52%, 100% { transform: translateX(320%); opacity: 0; }
+}
+
+.lab-grid-sweep {
+  animation: lab-sweep 9s ease-in-out infinite;
+}

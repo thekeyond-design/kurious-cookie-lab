@@ -1,9 +1,10 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Carousel, CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import { FadeIn } from "@/components/ui/fade-in";
 
 export interface CookieGalleryItem {
   id: string;
@@ -51,6 +52,47 @@ function AtomDecoration() {
   )
 }
 
+/* ─── Tilt wrapper ────────────────────────────────────────────────────────── */
+function TiltCard({
+  children,
+  className,
+  style,
+}: {
+  children: React.ReactNode
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const el = ref.current
+    if (!el) return
+    const r = el.getBoundingClientRect()
+    const x = (e.clientX - r.left) / r.width - 0.5
+    const y = (e.clientY - r.top) / r.height - 0.5
+    el.style.transform = `perspective(900px) rotateY(${x * 9}deg) rotateX(${-y * 9}deg) scale3d(1.02, 1.02, 1.02)`
+  }
+
+  function onMouseLeave() {
+    if (ref.current) {
+      ref.current.style.transform =
+        "perspective(900px) rotateY(0deg) rotateX(0deg) scale3d(1, 1, 1)"
+    }
+  }
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{ ...style, transition: "transform 0.2s ease-out", transformStyle: "preserve-3d" }}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+    >
+      {children}
+    </div>
+  )
+}
+
 const CookieGallery = ({
   title = "Our Highlighted Elements",
   description = "A selection of our most-loved cookie formulas. Batched to order, made fresh for you.",
@@ -85,12 +127,22 @@ const CookieGallery = ({
           backgroundSize: "48px 48px",
         }}
       />
+      {/* Light sweep across grid */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="lab-grid-sweep absolute inset-y-0 w-1/3"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(77,174,234,0.07) 50%, transparent 100%)",
+          }}
+        />
+      </div>
 
       {/* Atom decoration */}
       <AtomDecoration />
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="mb-10 flex items-end justify-between">
+        <FadeIn className="mb-10 flex items-end justify-between">
           <div className="flex flex-col gap-3">
             <span
               className="text-xs font-semibold uppercase tracking-widest text-[#4DAEEA]"
@@ -132,7 +184,7 @@ const CookieGallery = ({
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
-        </div>
+        </FadeIn>
       </div>
 
       <div className="relative z-10 w-full">
@@ -144,7 +196,7 @@ const CookieGallery = ({
             {items.map((item) => (
               <CarouselItem key={item.id} className="max-w-[300px] pl-[20px] lg:max-w-[340px]">
                 <a href={item.href} className="group block rounded-2xl">
-                  <div
+                  <TiltCard
                     className="group relative h-full min-h-[26rem] max-w-full overflow-hidden rounded-2xl md:aspect-[5/4] lg:aspect-[16/9]"
                     style={{ boxShadow: `0 4px 32px ${item.color}25, 0 0 0 1px ${item.color}20` }}
                   >
@@ -221,7 +273,7 @@ const CookieGallery = ({
                         <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
-                  </div>
+                  </TiltCard>
                 </a>
               </CarouselItem>
             ))}

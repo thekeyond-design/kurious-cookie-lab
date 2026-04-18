@@ -1,10 +1,11 @@
 import Link from "next/link"
-import Image from "next/image"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { FadeIn } from "@/components/ui/fade-in"
 import { CookieGallery } from "@/components/sections/CookieGallery"
 import type { CookieGalleryItem } from "@/components/sections/CookieGallery"
+import { HeroSection } from "@/components/sections/HeroSection"
+import { CountUp } from "@/components/ui/count-up"
 import { existsSync } from "fs"
 import path from "path"
 
@@ -48,115 +49,6 @@ export default function Home() {
       </main>
       <Footer />
     </>
-  )
-}
-
-/* ─── Hero ────────────────────────────────────────────────────────────────── */
-function HeroSection({ heroImage }: { heroImage: string | null }) {
-  return (
-    <section className="relative overflow-hidden min-h-[92vh] flex flex-col">
-      <div className="absolute inset-0 z-0">
-        {heroImage ? (
-          <Image
-            src={heroImage}
-            alt="Kurious Cookie Lab — artisan cookies"
-            fill
-            className="object-cover object-center"
-            priority
-            quality={90}
-          />
-        ) : (
-          <div
-            className="w-full h-full"
-            style={{ background: "linear-gradient(160deg, #FAF6F0 0%, #ffe8f3 40%, #ffd4ec 100%)" }}
-          >
-            <div
-              className="absolute inset-0 opacity-[0.25]"
-              style={{
-                backgroundImage: "radial-gradient(circle, #FF3DA0 1px, transparent 1px)",
-                backgroundSize: "28px 28px",
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="border-2 border-dashed border-[#FF3DA0]/20 rounded-2xl px-8 py-4 text-center">
-                <span
-                  className="text-xs font-semibold uppercase tracking-widest text-[#FF3DA0]/40"
-                  style={{ fontFamily: "var(--font-oswald)" }}
-                >
-                  Banner Photo Goes Here
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Gradient overlay — fades bottom into cream, darkens top for text readability */}
-        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/80 to-transparent" />
-        {heroImage && <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-black/40 to-transparent" />}
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 flex flex-col flex-1 items-center justify-end pb-20 px-4 text-center max-w-4xl mx-auto w-full">
-        <div className="space-y-6">
-          <div
-            className="inline-block text-xs font-semibold uppercase tracking-[0.2em] rounded-full px-5 py-1.5"
-            style={{
-              fontFamily: "var(--font-oswald)",
-              background: heroImage ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.06)",
-              color: heroImage ? "rgba(255,255,255,0.85)" : "rgba(0,0,0,0.60)",
-              border: heroImage ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(0,0,0,0.15)",
-              backdropFilter: heroImage ? "blur(4px)" : "none",
-            }}
-          >
-            Batch to Order &nbsp;&middot;&nbsp; Guilford County, NC
-          </div>
-
-          <h1 className="text-5xl sm:text-6xl md:text-8xl leading-none font-extrabold text-black">
-            <span style={{ fontFamily: "var(--font-display)" }}>Where Your Curiosity</span>
-            <br />
-            <span
-              className="text-[#FF3DA0]"
-              style={{ fontFamily: "var(--font-script)", fontWeight: 400, fontSize: "0.95em" }}
-            >
-              Takes a Bite.
-            </span>
-          </h1>
-
-          <p className="text-lg text-black/65 max-w-md mx-auto leading-relaxed">
-            Artisan cookies built like chemistry. Pick your elements,
-            build your formula, taste the reaction.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-            <Link
-              href="/order"
-              className="rounded-2xl bg-[#FF3DA0] text-white font-bold text-lg px-10 py-4
-                         hover:bg-[#e8007f] active:scale-95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Enter the Lab →
-            </Link>
-            <Link
-              href="/menu"
-              className="rounded-2xl border-2 font-bold text-lg px-10 py-4 transition-all hover:-translate-y-0.5 active:scale-95"
-              style={{
-                fontFamily: "var(--font-display)",
-                borderColor: "rgba(0,0,0,0.25)",
-                color: "rgba(0,0,0,0.80)",
-                background: "rgba(255,255,255,0.85)",
-                backdropFilter: "blur(4px)",
-              }}
-            >
-              View All Elements
-            </Link>
-          </div>
-
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <span className="text-[#FF3DA0] text-sm tracking-tight">★★★★★</span>
-            <span className="text-black/40 text-sm">Loved by cookie scientists everywhere</span>
-          </div>
-        </div>
-      </div>
-    </section>
   )
 }
 
@@ -219,7 +111,11 @@ function OurStorySection() {
           </span>
           <span
             className="block text-5xl sm:text-6xl text-[#FF3DA0] mt-1"
-            style={{ fontFamily: "var(--font-script)", fontWeight: 400 }}
+            style={{
+              fontFamily: "var(--font-script)",
+              fontWeight: 400,
+              textShadow: "0 3px 16px rgba(180, 0, 80, 0.28)",
+            }}
           >
             an experiment.
           </span>
@@ -240,9 +136,9 @@ function OurStorySection() {
         {/* Science stats */}
         <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
           {[
-            { value: "6+",    label: "Core Elements",   color: "#4DAEEA" },
-            { value: "100%",  label: "Batch to Order",  color: "#FF3DA0" },
-            { value: "NC",    label: "Guilford County", color: "#3EC9C9" },
+            { num: 6,    suffix: "+", label: "Core Elements",   color: "#4DAEEA" },
+            { num: 100,  suffix: "%", label: "Batch to Order",  color: "#FF3DA0" },
+            { num: null, suffix: "",  label: "Guilford County", color: "#3EC9C9", text: "NC" },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -253,7 +149,11 @@ function OurStorySection() {
                 className="text-2xl font-extrabold leading-none"
                 style={{ fontFamily: "var(--font-display)", color: stat.color }}
               >
-                {stat.value}
+                {stat.num !== null ? (
+                  <CountUp to={stat.num} suffix={stat.suffix} />
+                ) : (
+                  stat.text
+                )}
               </div>
               <div
                 className="text-[9px] font-semibold uppercase tracking-wider mt-1 text-black/40"
