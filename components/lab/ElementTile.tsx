@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Cookie } from "@/types"
 import { GROUP_COLORS } from "@/lib/cookies"
 
@@ -25,7 +26,7 @@ export function ElementTile({
       onClick={onClick}
       disabled={disabled}
       className={[
-        "element-tile",
+        "element-tile overflow-hidden",
         "w-full aspect-square flex flex-col items-center justify-center gap-0.5",
         "relative text-center transition-all duration-150",
         colors.bg,
@@ -39,6 +40,18 @@ export function ElementTile({
         .join(" ")}
       title={cookie.name}
     >
+      {/* Faded cookie photo background */}
+      {cookie.imageUrl && (
+        <Image
+          src={cookie.imageUrl}
+          alt=""
+          fill
+          aria-hidden="true"
+          className="object-cover opacity-[0.22] rounded-[10px] pointer-events-none"
+          sizes="120px"
+        />
+      )}
+
       {/* Atomic number */}
       <span className="absolute top-1.5 left-2 text-[10px] font-mono opacity-70 leading-none">
         {cookie.atomicNumber}

@@ -12,7 +12,7 @@ export const COOKIES: Cookie[] = [
     price: 4.50,
     isActive: true,
     isUnstable: false,
-    imageUrl: "/images/cookies/CCT2jpeg.jpeg",
+    imageUrl: "/images/cookies/chocolate-chip-toffee1.jpg",
   },
   {
     id: "pbo",
@@ -25,7 +25,7 @@ export const COOKIES: Cookie[] = [
     price: 5.00,
     isActive: true,
     isUnstable: false,
-    imageUrl: "/images/cookies/pbomenu.jpg",
+    imageUrl: "/images/cookies/PbO1.jpg",
   },
   {
     id: "bp",
@@ -64,7 +64,7 @@ export const COOKIES: Cookie[] = [
     price: 4.75,
     isActive: true,
     isUnstable: false,
-    imageUrl: "/images/cookies/dcc2.jpg",
+    imageUrl: "/images/cookies/dcc1.jpg",
   },
   {
     id: "sn",

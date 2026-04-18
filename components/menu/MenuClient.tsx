@@ -7,7 +7,7 @@ import { X } from "lucide-react"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { AllergenNotice } from "@/components/ui/allergen-notice"
-import { COOKIES, GROUP_COLORS } from "@/lib/cookies"
+import { COOKIES } from "@/lib/cookies"
 import type { Cookie, CookieGroup } from "@/types"
 
 // ─── Group config ──────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export function MenuClient() {
           <FilterTabs filter={filter} onFilter={setFilter} />
 
           <div className="mt-8 space-y-8">
-            <ElementGrid
+            <CookieGrid
               cookies={filtered}
               selected={selected}
               onSelect={openCookie}
@@ -303,42 +303,28 @@ function FilterTabs({ filter, onFilter }: { filter: "all" | CookieGroup; onFilte
   )
 }
 
-// ─── Element Grid ──────────────────────────────────────────────────────────────
-function ElementGrid({ cookies, selected, onSelect }: {
+// ─── Cookie Grid ───────────────────────────────────────────────────────────────
+function CookieGrid({ cookies, selected, onSelect }: {
   cookies: Cookie[]
   selected: Cookie | null
   onSelect: (c: Cookie) => void
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-4">
-        {Object.entries(GROUP_META).map(([key, meta]) => (
-          <div key={key} className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: meta.color }} />
-            <span className="text-[11px] font-semibold text-black/40 uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-oswald)" }}>
-              {meta.label}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-        {cookies.map((cookie) => (
-          <ElementTile
-            key={cookie.id}
-            cookie={cookie}
-            isSelected={selected?.id === cookie.id}
-            onClick={() => onSelect(cookie)}
-          />
-        ))}
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-5">
+      {cookies.map((cookie) => (
+        <CookieCard
+          key={cookie.id}
+          cookie={cookie}
+          isSelected={selected?.id === cookie.id}
+          onClick={() => onSelect(cookie)}
+        />
+      ))}
     </div>
   )
 }
 
-// ─── Element Tile ──────────────────────────────────────────────────────────────
-function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelected: boolean; onClick: () => void }) {
-  const colors = GROUP_COLORS[cookie.group]
+// ─── Cookie Photo Card ─────────────────────────────────────────────────────────
+function CookieCard({ cookie, isSelected, onClick }: { cookie: Cookie; isSelected: boolean; onClick: () => void }) {
   const meta = GROUP_META[cookie.group]
   const inactive = cookie.isActive === false
 
@@ -347,58 +333,102 @@ function ElementTile({ cookie, isSelected, onClick }: { cookie: Cookie; isSelect
       onClick={inactive ? undefined : onClick}
       disabled={inactive}
       className={[
-        "relative aspect-square flex flex-col items-center justify-center gap-0.5",
-        "rounded-xl border-2 p-2 select-none",
-        "transition-all duration-200 group",
-        colors.bg, colors.text,
+        "relative w-full overflow-hidden rounded-2xl text-left group select-none",
+        "border-2 transition-all duration-200",
         inactive
-          ? "opacity-50 cursor-default"
-          : isSelected
-            ? "scale-105 shadow-xl cursor-pointer"
-            : "hover:-translate-y-1 hover:shadow-md cursor-pointer",
-        cookie.isUnstable ? "element-tile unstable" : "",
+          ? "opacity-60 cursor-default"
+          : "cursor-pointer hover:-translate-y-1 hover:shadow-2xl",
       ].join(" ")}
       style={{
-        borderColor: inactive ? `${meta.color}40` : isSelected ? meta.color : `${meta.color}70`,
+        aspectRatio: "3/4",
+        borderColor: isSelected ? meta.color : `${meta.color}35`,
         boxShadow: isSelected
-          ? `0 0 0 3px ${meta.color}40, 0 8px 24px ${meta.color}30`
-          : `0 2px 8px ${meta.color}15`,
+          ? `0 0 0 3px ${meta.color}28, 0 10px 30px ${meta.color}28`
+          : `0 2px 14px rgba(0,0,0,0.10)`,
+        background: `linear-gradient(145deg, ${meta.color}18, ${meta.color}30)`,
       }}
     >
-      <span className="absolute top-1.5 left-2 text-[9px] font-mono opacity-40 leading-none">
+      {/* Cookie photo */}
+      {cookie.imageUrl && (
+        <Image
+          src={cookie.imageUrl}
+          alt={cookie.name}
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
+        />
+      )}
+
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/35 to-transparent" />
+
+      {/* Atomic number */}
+      <span className="absolute top-2.5 left-3 text-[10px] font-mono text-white/55 leading-none">
         {cookie.atomicNumber}
       </span>
-      {cookie.isUnstable && (
-        <span
-          className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase leading-none px-1 py-0.5 rounded"
-          style={{ fontFamily: "var(--font-oswald)", background: `${meta.color}25`, color: meta.color }}
-        >
-          ⚡
-        </span>
-      )}
-      <span
-        className="text-2xl sm:text-4xl font-extrabold leading-none mt-3"
-        style={{ fontFamily: "var(--font-display)", color: meta.color }}
+
+      {/* Symbol badge */}
+      <div
+        className="absolute top-2 right-2 w-10 h-10 rounded-xl border-2 flex items-center justify-center text-xs font-extrabold backdrop-blur-sm"
+        style={{
+          borderColor: `${meta.color}90`,
+          background: "rgba(0,0,0,0.55)",
+          color: meta.color,
+          fontFamily: "var(--font-display)",
+        }}
       >
         {cookie.symbol}
-      </span>
-      <span className="text-[10px] font-bold leading-tight text-center px-0.5 opacity-75 line-clamp-2"
-        style={{ fontFamily: "var(--font-sans)" }}>
-        {cookie.name}
-      </span>
-      {inactive ? (
-        <span className="text-[8px] font-bold mt-0.5 uppercase tracking-wide" style={{ fontFamily: "var(--font-oswald)", color: meta.color }}>
-          Coming Soon
-        </span>
-      ) : (
-      <span className="text-[9px] font-bold mt-0.5" style={{ fontFamily: "var(--font-oswald)", color: meta.color }}>
-        ${cookie.price.toFixed(2)}
-      </span>
+      </div>
+
+      {/* Coming soon overlay */}
+      {inactive && (
+        <div className="absolute inset-0 flex items-center justify-center backdrop-blur-[2px] bg-black/20">
+          <span
+            className="px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest"
+            style={{
+              fontFamily: "var(--font-oswald)",
+              background: "rgba(0,0,0,0.65)",
+              color: meta.color,
+              letterSpacing: "0.1em",
+            }}
+          >
+            Coming Soon
+          </span>
+        </div>
       )}
+
+      {/* Bottom info */}
+      <div className="absolute inset-x-0 bottom-0 p-4 space-y-1">
+        <div
+          className="text-sm font-extrabold text-white leading-tight"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          {cookie.name}
+        </div>
+        {!inactive && (
+          <div className="flex items-baseline gap-1.5">
+            <span
+              className="text-sm font-extrabold"
+              style={{ color: meta.color, fontFamily: "var(--font-display)" }}
+            >
+              ${cookie.price.toFixed(2)}
+            </span>
+            <span
+              className="text-[9px] text-white/40 font-medium"
+              style={{ fontFamily: "var(--font-oswald)", letterSpacing: "0.05em" }}
+            >
+              / COOKIE
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Selected inner ring */}
       {isSelected && (
-        <span
-          className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-          style={{ backgroundColor: meta.color }}
+        <div
+          className="absolute inset-0 rounded-2xl pointer-events-none"
+          style={{ boxShadow: `inset 0 0 0 2px ${meta.color}` }}
         />
       )}
     </button>
