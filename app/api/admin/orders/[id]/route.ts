@@ -19,7 +19,8 @@ export async function PATCH(
     { cookies: { getAll: () => request.cookies.getAll(), setAll: () => {} } }
   )
   const { data: { user } } = await anonClient.auth.getUser()
-  if (!user || user.email !== process.env.ADMIN_EMAIL) {
+  const adminEmails = (process.env.ADMIN_EMAIL ?? "").split(",").map((e) => e.trim()).filter(Boolean)
+  if (!user || !adminEmails.includes(user.email ?? "")) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
   }
 

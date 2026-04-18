@@ -36,11 +36,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // /admin and /api/admin are restricted to the site owner only
-  const adminEmail = process.env.ADMIN_EMAIL
+  // /admin and /api/admin are restricted to listed admin emails (comma-separated)
+  const adminEmails = (process.env.ADMIN_EMAIL ?? "").split(",").map((e) => e.trim()).filter(Boolean)
   const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/api/admin")
   if (isAdminRoute) {
-    const authorized = user && adminEmail && user.email === adminEmail
+    const authorized = user && adminEmails.includes(user.email ?? "")
     if (!authorized) {
       if (pathname.startsWith("/api/")) {
         return NextResponse.json({ error: "Unauthorized." }, { status: 401 })
