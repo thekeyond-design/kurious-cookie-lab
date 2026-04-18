@@ -58,7 +58,7 @@ export function MenuClient() {
       <main className="min-h-screen" style={{ background: "#FAF6F0" }}>
         <PageHeader />
 
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-16">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 pb-16">
           <FilterTabs filter={filter} onFilter={setFilter} />
 
           <div className="mt-8 space-y-8">
@@ -231,7 +231,7 @@ function CookieModal({ cookie, isOpen, onClose }: { cookie: Cookie; isOpen: bool
 // ─── Page Header ───────────────────────────────────────────────────────────────
 function PageHeader() {
   return (
-    <div className="relative overflow-hidden py-20 px-4 text-center">
+    <div className="relative overflow-hidden py-12 px-4 text-center">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.15]"
         style={{
@@ -310,7 +310,7 @@ function CookieGrid({ cookies, selected, onSelect }: {
   onSelect: (c: Cookie) => void
 }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
       {cookies.map((cookie) => (
         <CookieCard
           key={cookie.id}
@@ -340,7 +340,7 @@ function CookieCard({ cookie, isSelected, onClick }: { cookie: Cookie; isSelecte
           : "cursor-pointer hover:-translate-y-1 hover:shadow-2xl",
       ].join(" ")}
       style={{
-        aspectRatio: "3/4",
+        aspectRatio: "4/5",
         borderColor: isSelected ? meta.color : `${meta.color}35`,
         boxShadow: isSelected
           ? `0 0 0 3px ${meta.color}28, 0 10px 30px ${meta.color}28`

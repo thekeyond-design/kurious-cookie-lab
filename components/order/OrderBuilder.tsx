@@ -107,7 +107,7 @@ export function OrderBuilder() {
       </div>
 
       {/* ── Content ───────────────────────────────────────────────────── */}
-      <main className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-8 pb-16">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-6 pb-12">
 
         {/* Back link */}
         <Link
@@ -120,7 +120,7 @@ export function OrderBuilder() {
         </Link>
 
         {/* Page header */}
-        <div className="mb-10 space-y-2">
+        <div className="mb-6 space-y-2">
           <span
             className="text-xs font-semibold uppercase tracking-[0.2em] text-[#FF3DA0]"
             style={{ fontFamily: "var(--font-oswald)" }}
@@ -142,7 +142,7 @@ export function OrderBuilder() {
         {/* Progress indicator */}
         <ProgressBar step={progressStep} />
 
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
 
           {/* ── Steps column ──────────────────────────────────────────── */}
           <div className="space-y-5">
