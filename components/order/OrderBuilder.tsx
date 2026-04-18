@@ -17,9 +17,17 @@ const MAX_INSTRUCTIONS = 500
 
 const FULFILLMENT_OPTIONS: { value: FulfillmentType; label: string; sub: string; fee: string }[] = [
   { value: "pickup",            label: "Pickup",            sub: "Guilford County, NC",  fee: "Free" },
-  { value: "local_delivery",    label: "Local Delivery",    sub: "Guilford County area", fee: "TBD" },
-  { value: "nc_shipping",       label: "NC Shipping",       sub: "North Carolina",       fee: "TBD" },
+  { value: "local_delivery",    label: "Local Delivery",    sub: "Guilford County area", fee: "$5.00" },
+  { value: "nc_shipping",       label: "NC Shipping",       sub: "North Carolina",       fee: "$8.00" },
 ]
+
+const FULFILLMENT_FEES: Record<string, number> = {
+  pickup: 0,
+  local_delivery: 5.00,
+  nc_shipping: 8.00,
+}
+
+const NC_TAX_RATE = 0.0675
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -568,27 +576,40 @@ function OrderSummary({
         )}
       </div>
 
-      {fulfillment && (
-        <div className="space-y-1">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-black/30"
-            style={{ fontFamily: "var(--font-oswald)" }}>
-            Fulfillment
-          </span>
-          <p className="text-sm font-bold text-[#4DAEEA]" style={{ fontFamily: "var(--font-display)" }}>
-            {FULFILLMENT_OPTIONS.find((o) => o.value === fulfillment)?.label}
-          </p>
-        </div>
-      )}
+      {/* Pricing breakdown */}
+      {(() => {
+        const subtotal = config.flatPrice
+          ? config.flatPrice
+          : selectedCookies.reduce((s, c) => s + c.price, 0)
+        const shipping = fulfillment ? (FULFILLMENT_FEES[fulfillment] ?? 0) : null
+        const tax = Math.round(subtotal * NC_TAX_RATE * 100) / 100
+        const total = subtotal + (shipping ?? 0) + tax
 
-      <div className="border-t border-black/8 pt-3 flex items-baseline justify-between">
-        <span className="text-xs text-black/40">Estimated Total</span>
-        <span
-          className="text-2xl font-extrabold text-[#FF3DA0]"
-          style={{ fontFamily: "var(--font-display)" }}
-        >
-          {config.flatPrice ? `$${config.flatPrice}` : "TBD at checkout"}
-        </span>
-      </div>
+        return (
+          <div className="border-t border-black/8 pt-3 space-y-1.5">
+            <div className="flex items-center justify-between text-xs text-black/45">
+              <span>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            {shipping !== null && (
+              <div className="flex items-center justify-between text-xs text-black/45">
+                <span>Fulfillment ({FULFILLMENT_OPTIONS.find((o) => o.value === fulfillment)?.label})</span>
+                <span>{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-xs text-black/45">
+              <span>NC Sales Tax (6.75%)</span>
+              <span>${tax.toFixed(2)}</span>
+            </div>
+            <div className="flex items-baseline justify-between pt-1 border-t border-black/8 mt-1">
+              <span className="text-xs text-black/40">{shipping === null ? "Estimated Total" : "Total"}</span>
+              <span className="text-2xl font-extrabold text-[#FF3DA0]" style={{ fontFamily: "var(--font-display)" }}>
+                ${total.toFixed(2)}
+              </span>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

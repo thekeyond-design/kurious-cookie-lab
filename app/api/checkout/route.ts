@@ -73,8 +73,10 @@ export async function POST(request: NextRequest) {
       }))
     }
 
+    const NC_TAX_RATE = 0.0675
     const shippingFeeCents = SHIPPING_FEES[fulfillment] ?? 0
-    const totalCents = subtotalCents + shippingFeeCents
+    const taxCents = Math.round(subtotalCents * NC_TAX_RATE)
+    const totalCents = subtotalCents + shippingFeeCents + taxCents
 
     // Add shipping as a line item if applicable
     if (shippingFeeCents > 0) {
@@ -87,6 +89,16 @@ export async function POST(request: NextRequest) {
         quantity: 1,
       })
     }
+
+    // Add NC sales tax as a line item
+    stripeLineItems.push({
+      price_data: {
+        currency: "usd",
+        product_data: { name: "NC Sales Tax (6.75%)" },
+        unit_amount: taxCents,
+      },
+      quantity: 1,
+    })
 
     // ── Save pending order to Supabase ─────────────────────────────────────
     const supabase = createServiceClient()
@@ -102,7 +114,7 @@ export async function POST(request: NextRequest) {
         status: "pending",
         subtotal: subtotalCents / 100,
         shipping_fee: shippingFeeCents / 100,
-        total: totalCents / 100,
+        total: totalCents / 100, // includes tax
       })
       .select()
       .single()
