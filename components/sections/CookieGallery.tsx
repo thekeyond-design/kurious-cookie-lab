@@ -138,7 +138,7 @@ const CookieGallery = ({
       <div className="relative z-10 w-full">
         <Carousel
           setApi={setCarouselApi}
-          opts={{ breakpoints: { "(max-width: 768px)": { dragFree: true } } }}
+          opts={{ dragFree: true }}
         >
           <CarouselContent className="ml-0 2xl:ml-[max(8rem,calc(50vw-700px))] 2xl:mr-[max(0rem,calc(50vw-700px))]">
             {items.map((item) => (

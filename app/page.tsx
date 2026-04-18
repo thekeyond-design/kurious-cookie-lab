@@ -110,7 +110,7 @@ function HeroSection({ heroImage }: { heroImage: string | null }) {
             Batch to Order &nbsp;&middot;&nbsp; Guilford County, NC
           </div>
 
-          <h1 className="text-6xl sm:text-7xl md:text-8xl leading-none font-extrabold text-black">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl leading-none font-extrabold text-black">
             <span style={{ fontFamily: "var(--font-display)" }}>Where Your Curiosity</span>
             <br />
             <span
@@ -130,14 +130,14 @@ function HeroSection({ heroImage }: { heroImage: string | null }) {
             <Link
               href="/order"
               className="rounded-2xl bg-[#FF3DA0] text-white font-bold text-lg px-10 py-4
-                         hover:bg-[#e8007f] transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                         hover:bg-[#e8007f] active:scale-95 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
               style={{ fontFamily: "var(--font-display)" }}
             >
               Enter the Lab →
             </Link>
             <Link
               href="/menu"
-              className="rounded-2xl border-2 font-bold text-lg px-10 py-4 transition-all hover:-translate-y-0.5"
+              className="rounded-2xl border-2 font-bold text-lg px-10 py-4 transition-all hover:-translate-y-0.5 active:scale-95"
               style={{
                 fontFamily: "var(--font-display)",
                 borderColor: "rgba(0,0,0,0.25)",
@@ -175,7 +175,7 @@ function OurStorySection() {
       />
       {/* Faint teal corner glow — cooler than the pink Glow */}
       <div
-        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full opacity-20"
+        className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(700px,100vw)] h-[400px] rounded-full opacity-20"
         style={{ background: "radial-gradient(ellipse, #4DAEEA 0%, transparent 70%)" }}
       />
 

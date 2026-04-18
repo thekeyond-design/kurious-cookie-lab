@@ -122,9 +122,18 @@
   user-select: none;
 }
 
-.element-tile:hover {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+@media (hover: hover) {
+  .element-tile:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+}
+
+@media (hover: none) {
+  .element-tile:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+  }
 }
 
 .element-tile.selected {
